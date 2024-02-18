@@ -80,6 +80,8 @@ var options = {
 var network = new vis.Network(container, data, options);
 // Store the full tree data globally
 var fullTreeData = { nodes: [], edges: [] };
+// Keep track of the current search result index
+var currentSearchResultIndex = 0;
 // Function to process JSON and store it in fullTreeData
 function processJsonData(json) {
     var nodes = [];
@@ -292,15 +294,20 @@ document.addEventListener('click', function(event) {
         document.getElementById('searchResultsPopup').style.display = 'none';
     }
 });
-// Event listener for the search input to handle Enter keypress
+// Event listener for the search input to handle Enter keypress and cycle through matches
 document.getElementById('searchInput').addEventListener('keypress', function(event) {
     if (event.key === 'Enter') {
         var searchResultsPopup = document.getElementById('searchResultsPopup');
-        var firstResultItem = searchResultsPopup.querySelector('.search-result-item');
-        if (firstResultItem) {
-            var nodeId = firstResultItem.getAttribute('data-node-id');
+        var searchResultItems = searchResultsPopup.getElementsByClassName('search-result-item');
+        if (searchResultItems.length > 0) {
+            // If we've reached the end of the list, start from the beginning
+            if (currentSearchResultIndex >= searchResultItems.length) {
+                currentSearchResultIndex = 0;
+            }
+            var resultItem = searchResultItems[currentSearchResultIndex];
+            var nodeId = resultItem.getAttribute('data-node-id');
             network.focus(nodeId, { scale: 1 });
-            searchResultsPopup.style.display = 'none';
+            currentSearchResultIndex++; // Move to the next result for the next Enter press
         }
     }
 });
