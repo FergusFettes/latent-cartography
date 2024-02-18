@@ -86,10 +86,11 @@ def main(
     model_name: str = "gpt2",
     cutoff: float = 0.0001,
 ):
+    device = "cuda" if torch.cuda.is_available() else "cpu"
     print(f"Generating definition for word: {word} using model: {model_name} with cutoff: {cutoff}")
     if model_name in model_names:
         model_name = model_names[model_name]
-    model = LanguageModel(model_name)
+    model = LanguageModel(model_name, device_map=device)
 
     if word is None:
         transformer_model = AutoModelForCausalLM.from_pretrained(model_name)
