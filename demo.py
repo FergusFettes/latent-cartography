@@ -119,6 +119,7 @@ def main(
     latent_cartographer = LatentCartographer(model, model_name, token_position, cutoff, embeddings)
     latent_cartographer.loop(prompt, data, 0)
 
+    model_name = model_name.replace("/", "-")
     with open(f"{model_name}_{word}_{cutoff}.json", "w") as f:
         json.dump(data, f, indent=2)
 

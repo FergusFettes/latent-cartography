@@ -177,6 +177,23 @@ function visualizeTree(subtreeRootId) {
 
 }
 
+// Function to reset the color of all nodes
+function resetNodeColors() {
+    fullTreeData.nodes.forEach(function(node) {
+        node.color = undefined; // Reset to default color
+    });
+}
+
+// Function to highlight nodes by changing their color
+function highlightNodes(nodeIds) {
+    resetNodeColors(); // Reset all nodes before highlighting new ones
+    fullTreeData.nodes.forEach(function(node) {
+        if (nodeIds.includes(node.id)) {
+            node.color = { background: 'yellow', border: 'orange' }; // Highlight color
+        }
+    });
+    visualizeTree(); // Re-render the tree with highlighted nodes
+}
 // Event listener for click events to display subtrees
 network.on("click", function (params) {
   if (params.nodes.length === 1) {
@@ -259,11 +276,9 @@ function fuzzySearch(query, nodes, edges) {
         }
     });
     return results;
-}
 
-// Event listener for the search button
-// Event listener for the search input to perform live search
-// Event listener for the search input to perform live search and show the number of matches
+}
+// Event listener for the search input to perform live search and highlight all results
 document.getElementById('searchInput').addEventListener('input', function() {
     var query = document.getElementById('searchInput').value;
     var searchResultsPopup = document.getElementById('searchResultsPopup');
@@ -276,13 +291,20 @@ document.getElementById('searchInput').addEventListener('input', function() {
             }).join('');
             searchResultsPopup.innerHTML = resultsHTML;
             searchResultsPopup.style.display = 'block';
+            // Highlight all matching nodes
+            var matchingNodeIds = searchResults.map(function(result) { return result.node.id; });
+            highlightNodes(matchingNodeIds);
             console.log("Search results: ", searchResults);
         } else {
             searchResultsPopup.innerHTML = 'No matching nodes found.';
+            resetNodeColors(); // Reset node colors if no matches found
+            visualizeTree(); // Re-render the tree
             console.log("No matching nodes found.");
         }
     } else {
         searchResultsPopup.style.display = 'none';
+        resetNodeColors(); // Reset node colors when search is cleared
+        visualizeTree(); // Re-render the tree
     }
 });
 
