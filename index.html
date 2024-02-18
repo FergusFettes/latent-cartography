@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tree Visualizer</title>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css" rel="stylesheet" type="text/css" />
+<style>
+    html, body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden; /* Disable scrollbars */
+        height: 100%; /* Full height */
+        width: 100%; /* Full width */
+    }
+    #mynetwork {
+        height: 100%;
+        width: 100%;
+        position: absolute; /* Positioned relative to the viewport */
+        top: 0;
+        left: 0;
+    }
+    #fileInput {
+        position: absolute; /* Positioned relative to the viewport */
+        top: 10px;
+        left: 10px;
+        z-index: 5; /* Above the visualization */
+    }
+</style>
+    </style>
+</head>
+<body>
+
+<div>
+    <input type="file" id="fileInput" accept=".json">
+</div>
+<div id="mynetwork"></div>
+
+<script>
+    // Create a network
+    var container = document.getElementById('mynetwork');
+    var data = {
+        nodes: new vis.DataSet([]),
+        edges: new vis.DataSet([])
+    };
+var options = {
+    layout: {
+        hierarchical: {
+            direction: 'LR', // Left to Right
+            sortMethod: 'directed' // Directed layout to respect the direction of edges
+        }
+    },
+    physics: {
+        enabled: false // Disable physics for hierarchical layout
+    }
+};
+    var network = new vis.Network(container, data, options);
+
+    document.getElementById('fileInput').addEventListener('change', function(event) {
+        var input = event.target;
+
+        if ('files' in input && input.files.length > 0) {
+            var reader = new FileReader();
+            reader.onload = function() {
+                var json = JSON.parse(reader.result);
+                visualizeTree(json);
+            };
+            reader.readAsText(input.files[0]);
+        }
+    });
+
+function visualizeTree(json) {
+    // Convert the dictionary of nodes into a list for vis.js
+    var nodes = [];
+    var edges = [];
+
+    for (var key in json) {
+        if (json.hasOwnProperty(key)) {
+            var node = json[key];
+            nodes.push({ id: key, label: node.word, shape: 'box' });
+
+            if (node.parent !== null) {
+                edges.push({ from: node.parent, to: key });
+            }
+        }
+    }
+
+    // Update vis.js data
+    data.nodes.update(nodes);
+    data.edges.update(edges);
+}
+// Event listener for dragover to allow for the drop action
+document.body.addEventListener('dragover', function(e) {
+    e.preventDefault();
+});
+
+// Event listener for drop to handle the file data
+document.body.addEventListener('drop', function(e) {
+    e.preventDefault();
+    var files = e.dataTransfer.files;
+    if (files.length > 0) {
+        var file = files[0];
+        var reader = new FileReader();
+        reader.onload = function() {
+            var json = JSON.parse(reader.result);
+            visualizeTree(json);
+        };
+        reader.readAsText(file);
+    }
+});
+</script>
+<script>
+// Define the scale_edge_width function in JavaScript
+function scale_edge_width(cumulative_weight, max_weight, min_weight, log_base, max_thickness=33, min_thickness=1) {
+    // Ensure the cumulative_weight is not less than min_weight to avoid log(0)
+    cumulative_weight = Math.max(cumulative_weight, min_weight);
+
+    // Apply logarithmic scaling
+    var log_weight = Math.log(cumulative_weight) / Math.log(log_base) - Math.log(min_weight) / Math.log(log_base);
+    var log_max = Math.log(max_weight) / Math.log(log_base) - Math.log(min_weight) / Math.log(log_base);
+
+    // Amplify the difference after logarithmic scaling
+    var amplified_weight = Math.pow(log_weight / log_max, 2.5); // Raising to a power to amplify differences
+
+    // Scale the amplified_weight to the range of thicknesses
+    var scaled_weight = (amplified_weight * (max_thickness - min_thickness)) + min_thickness;
+
+    return scaled_weight;
+}
+
+// Update the visualizeTree function to scale edge widths
+function visualizeTree(json) {
+    var nodes = [];
+    var edges = [];
+    var min_weight = Number.POSITIVE_INFINITY;
+    var max_weight = 0;
+
+    // First pass to find min and max weights for scaling
+    for (var key in json) {
+        if (json.hasOwnProperty(key)) {
+            var node = json[key];
+            var weight = node.prob;
+            if (weight > 0) { // Only consider non-zero probabilities
+                min_weight = Math.min(min_weight, weight);
+                max_weight = Math.max(max_weight, weight);
+            }
+        }
+    }
+
+    // Second pass to create nodes and edges
+    for (var key in json) {
+        if (json.hasOwnProperty(key)) {
+            var node = json[key];
+            nodes.push({ id: key, label: node.word, shape: 'box' });
+
+            if (node.parent !== null) {
+                var edge_weight = scale_edge_width(node.prob, max_weight, min_weight, Math.E);
+                edges.push({
+                    from: node.parent,
+                    to: key,
+                    width: edge_weight
+                });
+            }
+        }
+    }
+
+    // Update vis.js data
+    data.nodes.update(nodes);
+    data.edges.update(edges);
+}
+</script>
+
+</body>
+</html>
+
