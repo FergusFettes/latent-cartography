@@ -64,6 +64,7 @@ function getDescendants(nodeId, edges) {
     var descendants = [nodeId];
     var stack = [nodeId];
     while (stack.length > 0) {
+console.log("Current node ID: " + currentId + ", Stack: " + stack);
         var currentId = stack.pop();
         edges.forEach(function(edge) {
             if (edge.from === currentId) {
@@ -111,13 +112,16 @@ function visualizeTree(json, subtreeRootId) {
         }
     }
 
+        var descendants = getDescendants(subtreeRootId, fullTreeData.edges);
     // If a subtreeRootId is provided, filter nodes and edges to only those in the subtree
     if (subtreeRootId) {
+        console.log("Filtering for subtree with root ID: " + subtreeRootId);
         var descendants = getDescendants(subtreeRootId, edges);
         nodes = nodes.filter(node => descendants.includes(node.id));
-        edges = edges.filter(edge => descendants.includes(edge.to));
+        edges = edges.filter(edge => descendants.includes(edge.to) || descendants.includes(edge.from));
     } else {
         // Store the full tree data globally if not filtering for a subtree
+        console.log("Storing full tree data globally.");
         fullTreeData.nodes = nodes;
         fullTreeData.edges = edges;
     }
@@ -133,6 +137,8 @@ function visualizeTree(json, subtreeRootId) {
 network.on("click", function(params) {
     if (params.nodes.length === 1) {
         var nodeId = params.nodes[0];
+        console.log("Node clicked: " + nodeId);
+        var nodeId = params.nodes[0];
         visualizeTree(fullTreeData, nodeId);
     }
 });
@@ -140,6 +146,7 @@ network.on("click", function(params) {
 // Event listener for right-click events to return to the full tree
 network.on("oncontext", function(params) {
     params.event.preventDefault();
+console.log("Right-click detected. Returning to full tree view.");
     visualizeTree(fullTreeData); // Pass the full tree data to restore the full view
 });
 

@@ -77,6 +77,9 @@ class LatentCartographer:
 
             id = len(nodes) + 1
             nodes[id] = {"token": token, "word": word, "prob": prob * cumulative_prob, "parent": node_id}
+            # Ensure word starts with a space
+            if word[0] != " ":
+                word = " " + word
             self.loop(prompt + word, nodes, id)
 
 
