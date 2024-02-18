@@ -1,12 +1,16 @@
+import json
+from typing import Optional
 from nnsight import LanguageModel
 import re
 import torch
+from transformers import AutoModelForCausalLM
+
+import typer
+
+app = typer.Typer()
 
 
 prompt = "A typical definition of X would be '"
-
-
-model = LanguageModel("gpt2")
 
 
 def validate_word(word):
@@ -18,52 +22,75 @@ def validate_word(word):
     return True
 
 
-tokens = model.tokenizer.encode(prompt)
-try:
-    x = model.tokenizer.encode(" X")
-    token_position = tokens.index(x[0])
-except ValueError:
-    x = model.tokenizer.encode("X")
-    token_position = tokens.index(x[0])
+class LatentCartographer:
+    def __init__(self, model, token_position, cutoff, noken):
+        self.model = model
+        self.token_position = token_position
+        self.cutoff = cutoff
+        self.noken = noken
 
-testword = "apple"
-with model.forward() as runner:
-    with runner.invoke(testword) as invoker:
-        testword_embeddings = model.transformer.wte.output.t[0].save()
+    def loop(self, prompt, nodes, node_id):
+        print(f"Looping with prompt: {prompt}")
+        with self.model.forward() as runner:
+            with runner.invoke(prompt) as _:
+                self.model.transformer.wte.output.t[self.token_position] = self.noken
+                output = self.model.lm_head.output.t[-1].save()
 
+        cumulative_prob = nodes[node_id]["prob"]
 
-def loop(prompt, nodes, node_id):
-    print(f"Looping with prompt: {prompt}")
-    with model.forward() as runner:
-        with runner.invoke(prompt) as _:
-            model.transformer.wte.output.t[token_position] = testword_embeddings
-            output = model.lm_head.output.t[-1].save()
+        # Apply softmax, filter out low probability tokens, then get the top k
+        probs = torch.softmax(output.value, dim=-1)
+        topk = probs.topk(10)
+        tokens = [
+            (prob.item(), token.item()) for prob, token in zip(topk.values[0], topk.indices[0]) if (cumulative_prob * prob) > self.cutoff
+        ]
 
-    cumulative_prob = nodes[node_id]["prob"]
+        for prob, token in tokens:
+            word = self.model.tokenizer.decode(token)
+            if not validate_word(word):
+                print(f"Skipping invalid word: {word}")
+                continue
 
-    # Apply softmax, filter out low probability tokens, then get the top k
-    cutoff = 0.0001
-    probs = torch.softmax(output.value, dim=-1)
-    topk = probs.topk(10)
-    tokens = [(prob.item(), token.item()) for prob, token in zip(topk.values[0], topk.indices[0]) if (cumulative_prob * prob) > cutoff]
+            print(f"{word}: {prob:.4f} ({cumulative_prob * prob:.4f})")
 
-    for prob, token in tokens:
-        word = model.tokenizer.decode(token)
-        if not validate_word(word):
-            print(f"Skipping invalid word: {word}")
-            continue
-
-        print(f"{word}: {prob:.4f} ({cumulative_prob * prob:.4f})")
-
-        id = len(nodes) + 1
-        nodes[id] = {"token": token, "word": word, "prob": prob * cumulative_prob, "parent": node_id}
-        loop(prompt + word, nodes, id)
+            id = len(nodes) + 1
+            nodes[id] = {"token": token, "word": word, "prob": prob * cumulative_prob, "parent": node_id}
+            self.loop(prompt + word, nodes, id)
 
 
-data = {0: {"token": None, "word": prompt, "prob": 1, "parent": None}}
-loop(prompt, data, 0)
+@app.command()
+def main(
+    word: Optional[str] = typer.Argument(None, help="The word to generate a definition for."),
+    model_name: str = "gpt2",
+    cutoff: float = 0.0001,
+):
+    print(f"Generating definition for word: {word} using model: {model_name} with cutoff: {cutoff}")
+    model = LanguageModel(model_name)
+
+    if word is None:
+        transformer_model = AutoModelForCausalLM.from_pretrained(model_name)
+        embeddings = transformer_model.get_input_embeddings().weight
+        embeddings = embeddings.mean(dim=0)
+    else:
+        with model.forward() as runner:
+            with runner.invoke(word) as _:
+                embeddings = model.transformer.wte.output.t[0].save()
+
+    tokens = model.tokenizer.encode(prompt)
+    try:
+        x = model.tokenizer.encode(" X")
+        token_position = tokens.index(x[0])
+    except ValueError:
+        x = model.tokenizer.encode("X")
+        token_position = tokens.index(x[0])
+
+    data = {0: {"token": None, "word": prompt, "prob": 1, "parent": None}}
+    latent_cartographer = LatentCartographer(model, token_position, cutoff, embeddings)
+    latent_cartographer.loop(prompt, data, 0)
+
+    with open("tree.json", "w") as f:
+        json.dump(data, f, indent=2)
 
 
-import json
-with open("tree.json", "w") as f:
-    json.dump(data, f, indent=2)
+if __name__ == "__main__":
+    app()
