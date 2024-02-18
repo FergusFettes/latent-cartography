@@ -39,13 +39,23 @@
 <body>
 
 <script>
+// Define a global variable to hold the raw JSON data
+var rawJsonData = {}; // Replace with actual JSON data if needed
+</script>
+<script>
 // Load JSON data from local storage if available
 document.addEventListener('DOMContentLoaded', function() {
-    var storedJson = localStorage.getItem('treeData');
-    if (storedJson) {
-        var json = JSON.parse(storedJson);
-        processJsonData(json);
+    // Check if rawJsonData is not empty
+    if (Object.keys(rawJsonData).length !== 0) {
+        processJsonData(rawJsonData);
         visualizeTree();
+    } else {
+        var storedJson = localStorage.getItem('treeData');
+        if (storedJson) {
+            var json = JSON.parse(storedJson);
+            processJsonData(json);
+            visualizeTree();
+        }
     }
 });
 </script>
