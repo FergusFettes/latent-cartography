@@ -13,6 +13,16 @@ app = typer.Typer()
 prompt = "A typical definition of X would be '"
 
 
+# Define the model names for LLaMA-2, Mistral, and GPT-2
+model_names = {
+    "llama": "TinyLlama/TinyLlama-1.1B-intermediate-step-1431k-3T",
+    "gpt2": "gpt2",
+    # "mamba": "MrGonao/delphi-mamba-100k",
+    "mistral": "mistralai/Mistral-7B-v0.1",
+    "gptj": "EleutherAI/gpt-j-6B",
+}
+
+
 def validate_word(word):
     word = word.strip()
     if not word:
@@ -65,6 +75,8 @@ def main(
     cutoff: float = 0.0001,
 ):
     print(f"Generating definition for word: {word} using model: {model_name} with cutoff: {cutoff}")
+    if model_name in model_names:
+        model_name = model_names[model_name]
     model = LanguageModel(model_name)
 
     if word is None:
