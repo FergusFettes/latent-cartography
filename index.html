@@ -21,6 +21,19 @@
         top: 0;
         left: 0;
     }
+.search-results-popup {
+    display: none;
+    position: absolute;
+    top: 50px;
+    right: 10px;
+    border: 1px solid #ccc;
+    background: #fff;
+    z-index: 10;
+    padding: 10px;
+    max-height: 300px;
+    overflow-y: auto;
+    width: 200px;
+}
 </style>
 </head>
 <body>
@@ -38,7 +51,10 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 <div style="position: absolute; top: 10px; right: 10px; z-index: 5;">
     <button id="clearButton">Clear</button>
+<input type="text" id="searchInput" placeholder="Search nodes...">
+<button id="searchButton">Search</button>
 </div>
+<div id="searchResultsPopup" class="search-results-popup"></div>
 <div id="mynetwork"></div>
 
 <script>
@@ -229,6 +245,65 @@ function scale_edge_width(
 
   return scaled_weight;
 }
+// Simple fuzzy search function to match node labels
+// Enhanced fuzzy search function to match node labels and count descendants
+function fuzzySearch(query, nodes, edges) {
+    var results = [];
+    var queryLower = query.toLowerCase();
+    nodes.forEach(function(node) {
+        if (node.label.toLowerCase().includes(queryLower)) {
+            var descendantsCount = getDescendants(node.id, edges).length - 1; // Exclude the node itself
+            results.push({ node: node, count: descendantsCount });
+        }
+    });
+    return results;
+}
+
+// Event listener for the search button
+// Event listener for the search input to perform live search
+// Event listener for the search input to perform live search and show the number of matches
+document.getElementById('searchInput').addEventListener('input', function() {
+    var query = document.getElementById('searchInput').value;
+    var searchResultsPopup = document.getElementById('searchResultsPopup');
+    if (query) {
+        var searchResults = fuzzySearch(query, fullTreeData.nodes, fullTreeData.edges);
+        if (searchResults.length > 0) {
+            var resultsHTML = searchResults.map(function(result) {
+                return '<div class="search-result-item" data-node-id="' + result.node.id + '">' +
+                    result.node.label + ' (' + result.count + ' matches)</div>';
+            }).join('');
+            searchResultsPopup.innerHTML = resultsHTML;
+            searchResultsPopup.style.display = 'block';
+            console.log("Search results: ", searchResults);
+        } else {
+            searchResultsPopup.innerHTML = 'No matching nodes found.';
+            console.log("No matching nodes found.");
+        }
+    } else {
+        searchResultsPopup.style.display = 'none';
+    }
+});
+
+// Event listener for clicking on search result items
+document.addEventListener('click', function(event) {
+    if (event.target.classList.contains('search-result-item')) {
+        var nodeId = event.target.getAttribute('data-node-id');
+        network.focus(nodeId, { scale: 1 });
+        document.getElementById('searchResultsPopup').style.display = 'none';
+    }
+});
+// Event listener for the search input to handle Enter keypress
+document.getElementById('searchInput').addEventListener('keypress', function(event) {
+    if (event.key === 'Enter') {
+        var searchResultsPopup = document.getElementById('searchResultsPopup');
+        var firstResultItem = searchResultsPopup.querySelector('.search-result-item');
+        if (firstResultItem) {
+            var nodeId = firstResultItem.getAttribute('data-node-id');
+            network.focus(nodeId, { scale: 1 });
+            searchResultsPopup.style.display = 'none';
+        }
+    }
+});
 
 // Event listener for the 'Clear' button
 document.getElementById('clearButton').addEventListener('click', function() {
