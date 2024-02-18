@@ -21,19 +21,23 @@
         top: 0;
         left: 0;
     }
-    #fileInput {
-        position: absolute; /* Positioned relative to the viewport */
-        top: 10px;
-        left: 10px;
-        z-index: 5; /* Above the visualization */
-    }
 </style>
-    </style>
 </head>
 <body>
 
-<div>
-    <input type="file" id="fileInput" accept=".json">
+<script>
+// Load JSON data from local storage if available
+document.addEventListener('DOMContentLoaded', function() {
+    var storedJson = localStorage.getItem('treeData');
+    if (storedJson) {
+        var json = JSON.parse(storedJson);
+        processJsonData(json);
+        visualizeTree();
+    }
+});
+</script>
+<div style="position: absolute; top: 10px; right: 10px; z-index: 5;">
+    <button id="clearButton">Clear</button>
 </div>
 <div id="mynetwork"></div>
 
@@ -67,10 +71,11 @@ function processJsonData(json) {
     for (var key in json) {
         if (json.hasOwnProperty(key)) {
             var node = json[key];
-            nodes.push({ id: key, label: node.word, shape: "box" });
+            var numericKey = Number(key);
+            nodes.push({ id: numericKey, label: node.word, shape: "box", probability: node.prob });
 
             if (node.parent !== null) {
-                edges.push({ from: node.parent, to: key });
+                edges.push({ from: Number(node.parent), to: numericKey });
             }
         }
     }
@@ -96,17 +101,15 @@ function getDescendants(nodeId, edges) {
     return descendants;
 }
 
-// Update the visualizeTree function to optionally filter for a subtree
+// Update the visualizeTree function to optionally filter for a subtree and scale edge widths
 function visualizeTree(subtreeRootId) {
   var nodes = fullTreeData.nodes;
   var edges = fullTreeData.edges;
-  var min_weight = Number.POSITIVE_INFINITY;
-  var max_weight = 0;
 
   // If a subtreeRootId is provided, filter nodes and edges to only those in the subtree
   if (subtreeRootId) {
-    console.log("Filtering for subtree with root ID: " + subtreeRootId, edges);
     var descendants = getDescendants(subtreeRootId, edges);
+    console.log("Filtering for subtree with root ID: " + subtreeRootId, edges);
     nodes = nodes.filter((node) => descendants.includes(Number(node.id)));
     edges = edges.filter(
       (edge) =>
@@ -115,11 +118,45 @@ function visualizeTree(subtreeRootId) {
     console.log("Filtered nodes: ", nodes, "Filtered edges: ", edges);
   }
 
+  // Calculate min and max weights for scaling after filtering
+  var min_weight = Number.POSITIVE_INFINITY;
+  var max_weight = 0;
+
+  nodes.forEach(function (node) {
+    if (node.probability < min_weight) {
+      min_weight = node.probability;
+    }
+    if (node.probability > max_weight) {
+      max_weight = node.probability;
+    }
+  });
+
+  // Scale edge widths based on node probabilities
+  edges = edges.map(function (edge) {
+    return {
+      from: edge.from,
+      to: edge.to,
+      value: scale_edge_width(
+        nodes.find((node) => node.id === edge.to).probability,
+        max_weight,
+        min_weight,
+        10 // Log base
+      ),
+    };
+  });
+
   // Update vis.js data
   data.nodes.clear();
   data.edges.clear();
   data.nodes.add(nodes);
   data.edges.add(edges);
+
+  // If a subtreeRootId is provided, recenter the view on the subtree
+  if (subtreeRootId) {
+    var subtreeRoot = nodes.find((node) => node.id === subtreeRootId);
+    network.focus(subtreeRootId, { scale: 1 });
+  }
+
 }
 
 // Event listener for click events to display subtrees
@@ -139,24 +176,6 @@ network.on("oncontext", function (params) {
   visualizeTree(); // Pass the full tree data to restore the full view
 });
 
-document
-  .getElementById("fileInput")
-  .addEventListener("change", function (event) {
-    var input = event.target;
-
-    if ("files" in input && input.files.length > 0) {
-      var reader = new FileReader();
-      reader.onload = function () {
-        var json = JSON.parse(reader.result);
-    console.log("File loaded, processing JSON data...");
-        processJsonData(json); // Process the JSON data
-        visualizeTree(); // Visualize the full tree
-    console.log("Visualizing tree...");
-      };
-      reader.readAsText(input.files[0]);
-    }
-  });
-
 // Event listener for dragover to allow for the drop action
 document.body.addEventListener("dragover", function (e) {
   e.preventDefault();
@@ -175,10 +194,12 @@ document.body.addEventListener("drop", function (e) {
       processJsonData(json); // Process the JSON data
     console.log("Visualizing tree...");
       visualizeTree(); // Visualize the full tree
+localStorage.setItem('treeData', JSON.stringify(json));
     };
     reader.readAsText(file);
   }
 });
+
 // Define the scale_edge_width function in JavaScript
 function scale_edge_width(
   cumulative_weight,
@@ -208,8 +229,13 @@ function scale_edge_width(
 
   return scaled_weight;
 }
-</script>
 
+// Event listener for the 'Clear' button
+document.getElementById('clearButton').addEventListener('click', function() {
+    localStorage.removeItem('treeData'); // Clear local storage
+    location.reload(); // Reload the page to reset the visualization
+});
+</script>
 </body>
 </html>
 
