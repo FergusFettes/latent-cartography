@@ -41,7 +41,7 @@ def get_model_specifics(model_name):
         return "transformer", "h", "wte"
     if "mamba" in model_name:
         return "backbone", "layers", "embed_tokens"
-    return "model", "layers"
+    return "model", "layers", "embed_tokens"
 
 
 class LatentCartographer:
