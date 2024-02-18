@@ -32,18 +32,30 @@ def validate_word(word):
     return True
 
 
+def get_model_specifics(model_name):
+    """
+    Get the model specific attributes.
+    The following works for gpt2, llama2 and mistral models.
+    """
+    if "gpt" in model_name:
+        return "transformer", "h"
+    if "mamba" in model_name:
+        return "backbone", "layers"
+    return "model", "layers"
+
+
 class LatentCartographer:
-    def __init__(self, model, token_position, cutoff, noken):
+    def __init__(self, model, model_name, token_position, cutoff, noken):
         self.model = model
         self.token_position = token_position
         self.cutoff = cutoff
         self.noken = noken
+        self.model_specifics = get_model_specifics(model_name)
 
     def loop(self, prompt, nodes, node_id):
-        print(f"Looping with prompt: {prompt}")
         with self.model.forward() as runner:
             with runner.invoke(prompt) as _:
-                self.model.transformer.wte.output.t[self.token_position] = self.noken
+                self.model.getattr(self.model_specifics[0]).getattr(self.model_specifics[1]).output.t[self.token_position] = self.noken
                 output = self.model.lm_head.output.t[-1].save()
 
         cumulative_prob = nodes[node_id]["prob"]
@@ -61,7 +73,7 @@ class LatentCartographer:
                 print(f"Skipping invalid word: {word}")
                 continue
 
-            print(f"{word}: {prob:.4f} ({cumulative_prob * prob:.4f})")
+            print(f"prompt: {prompt} -> {word}:\t{prob:.4f}\t({cumulative_prob * prob:.2e})")
 
             id = len(nodes) + 1
             nodes[id] = {"token": token, "word": word, "prob": prob * cumulative_prob, "parent": node_id}
@@ -84,9 +96,12 @@ def main(
         embeddings = transformer_model.get_input_embeddings().weight
         embeddings = embeddings.mean(dim=0)
     else:
+        model_specifics = get_model_specifics(model.model_name)
+
         with model.forward() as runner:
             with runner.invoke(word) as _:
-                embeddings = model.transformer.wte.output.t[0].save()
+                # embeddings = model.transformer.wte.output.t[0].save()
+                embeddings = model.getattr(model_specifics[0]).getattr(model_specifics[1]).output.t[0].save()
 
     tokens = model.tokenizer.encode(prompt)
     try:
@@ -97,7 +112,7 @@ def main(
         token_position = tokens.index(x[0])
 
     data = {0: {"token": None, "word": prompt, "prob": 1, "parent": None}}
-    latent_cartographer = LatentCartographer(model, token_position, cutoff, embeddings)
+    latent_cartographer = LatentCartographer(model, model_name, token_position, cutoff, embeddings)
     latent_cartographer.loop(prompt, data, 0)
 
     with open("tree.json", "w") as f:

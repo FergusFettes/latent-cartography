@@ -56,6 +56,92 @@ var options = {
     }
 };
     var network = new vis.Network(container, data, options);
+// Store the full tree data globally
+var fullTreeData = { nodes: [], edges: [] };
+
+// Function to get all descendants of a node
+function getDescendants(nodeId, edges) {
+    var descendants = [nodeId];
+    var stack = [nodeId];
+    while (stack.length > 0) {
+        var currentId = stack.pop();
+        edges.forEach(function(edge) {
+            if (edge.from === currentId) {
+                descendants.push(edge.to);
+                stack.push(edge.to);
+            }
+        });
+    }
+    return descendants;
+}
+
+// Update the visualizeTree function to optionally filter for a subtree
+function visualizeTree(json, subtreeRootId) {
+    var nodes = [];
+    var edges = [];
+    var min_weight = Number.POSITIVE_INFINITY;
+    var max_weight = 0;
+
+    // First pass to find min and max weights for scaling
+    for (var key in json) {
+        if (json.hasOwnProperty(key)) {
+            var node = json[key];
+            var weight = node.prob;
+            if (weight > 0) { // Only consider non-zero probabilities
+                min_weight = Math.min(min_weight, weight);
+                max_weight = Math.max(max_weight, weight);
+            }
+        }
+    }
+
+    // Second pass to create nodes and edges
+    for (var key in json) {
+        if (json.hasOwnProperty(key)) {
+            var node = json[key];
+            nodes.push({ id: key, label: node.word, shape: 'box' });
+
+            if (node.parent !== null) {
+                var edge_weight = scale_edge_width(node.prob, max_weight, min_weight, Math.E);
+                edges.push({
+                    from: node.parent,
+                    to: key,
+                    width: edge_weight
+                });
+            }
+        }
+    }
+
+    // If a subtreeRootId is provided, filter nodes and edges to only those in the subtree
+    if (subtreeRootId) {
+        var descendants = getDescendants(subtreeRootId, edges);
+        nodes = nodes.filter(node => descendants.includes(node.id));
+        edges = edges.filter(edge => descendants.includes(edge.to));
+    } else {
+        // Store the full tree data globally if not filtering for a subtree
+        fullTreeData.nodes = nodes;
+        fullTreeData.edges = edges;
+    }
+
+    // Update vis.js data
+    data.nodes.clear();
+    data.edges.clear();
+    data.nodes.add(nodes);
+    data.edges.add(edges);
+}
+
+// Event listener for click events to display subtrees
+network.on("click", function(params) {
+    if (params.nodes.length === 1) {
+        var nodeId = params.nodes[0];
+        visualizeTree(fullTreeData, nodeId);
+    }
+});
+
+// Event listener for right-click events to return to the full tree
+network.on("oncontext", function(params) {
+    params.event.preventDefault();
+    visualizeTree(fullTreeData); // Pass the full tree data to restore the full view
+});
 
     document.getElementById('fileInput').addEventListener('change', function(event) {
         var input = event.target;
