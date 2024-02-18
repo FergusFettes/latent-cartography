@@ -55,7 +55,7 @@ class LatentCartographer:
     def loop(self, prompt, nodes, node_id):
         with self.model.forward() as runner:
             with runner.invoke(prompt) as _:
-                getattr(getattr(self.model, self.model_specifics[0]), self.model_specifics[1]).output.t[self.token_position] = self.noken
+                getattr(self.model, self.model_specifics[0]).wte.output.t[self.token_position] = self.noken
                 output = self.model.lm_head.output.t[-1].save()
 
         cumulative_prob = nodes[node_id]["prob"]
@@ -97,11 +97,11 @@ def main(
         embeddings = transformer_model.get_input_embeddings().weight
         embeddings = embeddings.mean(dim=0)
     else:
-        model_specifics = get_model_specifics(model.model_name)
+        model_specifics = get_model_specifics(model_name)
 
         with model.forward() as runner:
             with runner.invoke(word) as _:
-                embeddings = getattr(getattr(model, model_specifics[0]), model_specifics[1]).output.t[0].save()
+                embeddings = getattr(model, model_specifics[0]).wte.output.t[0].save()
 
     tokens = model.tokenizer.encode(prompt)
     try:
