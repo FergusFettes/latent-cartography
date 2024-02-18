@@ -99,6 +99,7 @@ def main(
         transformer_model = AutoModelForCausalLM.from_pretrained(model_name)
         embeddings = transformer_model.get_input_embeddings().weight
         embeddings = embeddings.mean(dim=0)
+        word = "noken"
     else:
         model_specifics = get_model_specifics(model_name)
 
@@ -118,7 +119,7 @@ def main(
     latent_cartographer = LatentCartographer(model, model_name, token_position, cutoff, embeddings)
     latent_cartographer.loop(prompt, data, 0)
 
-    with open("tree.json", "w") as f:
+    with open(f"{model_name}_{word}.json", "w") as f:
         json.dump(data, f, indent=2)
 
 
