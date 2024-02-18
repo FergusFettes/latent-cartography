@@ -1,0 +1,1 @@
+# This __init__.py file makes latent_cartography a Python package.
