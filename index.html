@@ -75,6 +75,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </select>
 <input type="text" id="searchInput" placeholder="Search nodes...">
 <button id="searchButton">Search</button>
+<button id="switchLayoutButton">Dynamics</button>
 </div>
 <div id="searchResultsPopup" class="search-results-popup"></div>
 <div id="infoBox">
@@ -89,20 +90,53 @@ var data = {
   nodes: new vis.DataSet([]),
   edges: new vis.DataSet([]),
 };
-var options = {
+var optionsHierarchical = {
   layout: {
     hierarchical: {
       direction: "LR", // Left to Right
       sortMethod: "directed", // Directed layout to respect the direction of edges
-      levelSeparation: 50,
-      nodeSpacing: 30,
+      levelSeparation: 45,
+      nodeSpacing: 25,
     },
   },
   physics: {
     enabled: false, // Disable physics for hierarchical layout
   }
 };
-var network = new vis.Network(container, data, options);
+
+var network = new vis.Network(container, data, optionsHierarchical);
+
+
+document.getElementById('switchLayoutButton').addEventListener('click', function() {
+  // Define your physics-based options
+  var optionsPhysics = {
+    physics: {
+      barnesHut: {
+        gravitationalConstant: -20000,
+        centralGravity: 0.3,
+        springLength: 20,
+        springConstant: 0.25,
+        damping: 0.05,
+        avoidOverlap: 0.1
+      },
+      solver: 'barnesHut',
+      stabilization: {
+        enabled: true,
+        iterations: 1000,
+        updateInterval: 10,
+        onlyDynamicEdges: false,
+        fit: true
+      }
+    },
+    layout: {
+      hierarchical: false // Disable the hierarchical layout
+    }
+  };
+
+  network.setOptions(optionsPhysics);
+});
+
+
 // Store the full tree data globally
 var fullTreeData = { nodes: [], edges: [] };
 // Flag to indicate if the tree data has changed and needs re-rendering
