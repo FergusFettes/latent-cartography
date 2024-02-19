@@ -127,7 +127,9 @@ def main(
     print(f"Elapsed time: {time.time() - start:.2f}s. Nodes: {len(latent_cartographer.nodes)}")
 
     model_name = model_name.replace("/", "-")
-    with open(f"{model_name}_{word}_{cutoff}.json", "w") as f:
+    filename = f"{model_name}_{word}_{cutoff}.json"
+    print(f"Saving nodes to {filename}")
+    with open(filename, "w") as f:
         json.dump(latent_cartographer.nodes, f, indent=2)
 
 
