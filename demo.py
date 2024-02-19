@@ -77,10 +77,10 @@ class LatentCartographer:
         for prob, token in tokens:
             word = self.model.tokenizer.decode(token)
             if not validate_word(word):
-                print(f"Skipping invalid word: {word}")
+                tqdm.write(f"Skipping invalid word: {word}")
                 continue
 
-            print(f"prompt: {prompt} -> {word}:\t{prob:.4f}\t({cumulative_prob * prob:.2e})")
+            tqdm.write(f"prompt: {prompt} -> {word}:\t{prob:.4f}\t({cumulative_prob * prob:.2e})")
 
             id = len(self.nodes) + 1
             self.nodes[id] = {"token": token, "word": word, "prob": prob * cumulative_prob, "parent": node_id}
