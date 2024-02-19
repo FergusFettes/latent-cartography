@@ -476,7 +476,7 @@ document.getElementById("datasetDropdown").addEventListener("change", function (
 
 // Function to fetch a dataset from Hugging Face and process it
 function fetchDatasetFromHuggingFace(dataset) {
-    var url = `https://huggingface.co/${dataset}/raw/main/test.json`;
+    var url = `https://huggingface.co/datasets/${dataset}/raw/main/test.json`;
     fetch(url)
         .then(response => response.json())
         .then(json => {
