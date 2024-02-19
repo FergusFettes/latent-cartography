@@ -289,17 +289,42 @@ function fuzzySearch(query, nodes, edges) {
 
 }
 // Event listener for the search input to perform live search and highlight all results
-document.getElementById('searchInput').addEventListener('input', function() {
+// Debounce function to limit the rate at which a function can fire
+function debounce(func, wait, immediate) {
+    var timeout;
+    return function() {
+        var context = this, args = arguments;
+        var later = function() {
+            timeout = null;
+            if (!immediate) func.apply(context, args);
+        };
+        var callNow = immediate && !timeout;
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+        if (callNow) func.apply(context, args);
+    };
+};
+
+// Cache for storing descendants of nodes
+var descendantsCache = {};
+
+// Event listener for the search input to perform live search and highlight all results
+document.getElementById('searchInput').addEventListener('input', debounce(function() {
     var query = document.getElementById('searchInput').value;
     var searchResultsPopup = document.getElementById('searchResultsPopup');
     if (query) {
         var searchResults = fuzzySearch(query, fullTreeData.nodes, fullTreeData.edges);
         if (searchResults.length > 0) {
-            var resultsHTML = searchResults.map(function(result) {
-                return '<div class="search-result-item" data-node-id="' + result.node.id + '">' +
-                    result.node.label + ' (' + result.count + ' matches)</div>';
-            }).join('');
-            searchResultsPopup.innerHTML = resultsHTML;
+            var fragment = document.createDocumentFragment();
+            searchResults.forEach(function(result) {
+                var div = document.createElement('div');
+                div.className = 'search-result-item';
+                div.setAttribute('data-node-id', result.node.id);
+                div.textContent = result.node.label + ' (' + result.count + ' matches)';
+                fragment.appendChild(div);
+            });
+            searchResultsPopup.innerHTML = '';
+            searchResultsPopup.appendChild(fragment);
             searchResultsPopup.style.display = 'block';
             // Highlight all matching nodes
             var matchingNodeIds = searchResults.map(function(result) { return result.node.id; });
@@ -316,7 +341,7 @@ document.getElementById('searchInput').addEventListener('input', function() {
         resetNodeColors(); // Reset node colors when search is cleared
         visualizeTree(); // Re-render the tree
     }
-});
+}, 250)); // Debounce rate of 250 milliseconds
 
 // Event listener for clicking on search result items
 document.addEventListener('click', function(event) {
@@ -352,4 +377,3 @@ document.getElementById('clearButton').addEventListener('click', function() {
 </script>
 </body>
 </html>
-
