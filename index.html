@@ -224,6 +224,7 @@ function processJsonData(json) {
     fullTreeData = { nodes: nodes, edges: edges };
     // Set the flag to true as the tree data has been updated
     treeDataChanged = true;
+    updateInfoBox(); // Update the info box after processing new JSON data
 
     // Identify top-level nodes (children of the root node)
     if (rootId !== null) {
@@ -362,19 +363,15 @@ function visualizeTree(subtreeRootId, targetNetwork = network, isSubtree = false
     }
 
     treeDataChanged = false;
+    updateInfoBox(); // Update the info box after visualizing the tree
 }
 
 // Function to update the info box with total nodes and FPS
+// Function to update the info box with total nodes
 function updateInfoBox() {
-  var totalNodes = data.nodes.length;
+  var totalNodes = fullTreeData.nodes.length;
   document.getElementById("totalNodes").textContent = totalNodes;
 }
-
-// Call updateInfoBox when visualizing the tree
-updateInfoBox();
-
-// Update the info box every second
-setInterval(updateInfoBox, 1000);
 
 // Function to reset the color of all nodes
 // Function to update the color of nodes directly in the network
