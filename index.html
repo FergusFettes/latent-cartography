@@ -90,6 +90,10 @@ var options = {
 var network = new vis.Network(container, data, options);
 // Store the full tree data globally
 var fullTreeData = { nodes: [], edges: [] };
+// Flag to indicate if the tree data has changed and needs re-rendering
+var treeDataChanged = true;
+// Var to keep track of highlited node ids
+var highlightedNodeIds = [];
 // Keep track of the current search result index
 var currentSearchResultIndex = 0;
 // Function to process JSON and store it in fullTreeData
@@ -108,42 +112,69 @@ function processJsonData(json) {
         }
     }
     fullTreeData = { nodes: nodes, edges: edges };
+// Set the flag to true as the tree data has been updated
+treeDataChanged = true;
 }
-    console.log("JSON data processed", fullTreeData);
+
+// Memoization cache for getDescendants function
+var descendantsCache = {};
 
 function getDescendants(nodeId, edges) {
-    var descendants = [];
-    var stack = [nodeId];
-    console.log(edges)
-    while (stack.length > 0) {
-        console.log("Stack: " + stack);
-        var currentId = Number(stack.pop());
-        descendants.push(currentId);
-        edges.forEach(function (edge) {
-            if (edge.from === currentId && !descendants.includes(edge.to)) {
-                stack.push(edge.to);
-            }
-        });
+    // Check if result is already cached
+    if (descendantsCache[nodeId]) {
+        return descendantsCache[nodeId];
     }
-    console.log("Descendants: " + descendants);
-    return descendants;
+
+    var descendants = new Set([nodeId]);
+    var stack = [nodeId];
+
+    // Convert edges to adjacency list for faster lookups
+    var adjacencyList = edges.reduce(function(acc, edge) {
+        if (!acc[edge.from]) {
+            acc[edge.from] = [];
+        }
+        acc[edge.from].push(edge.to);
+        return acc;
+    }, {});
+
+    while (stack.length > 0) {
+        var currentId = stack.pop();
+        var children = adjacencyList[currentId] || [];
+        for (var i = 0; i < children.length; i++) {
+            var childId = children[i];
+            if (!descendants.has(childId)) {
+                descendants.add(childId);
+                stack.push(childId);
+            }
+        }
+    }
+
+    // Convert Set to Array for the result
+    var descendantsArray = Array.from(descendants);
+    // Cache the result before returning
+    descendantsCache[nodeId] = descendantsArray;
+    return descendantsArray;
 }
 
 // Update the visualizeTree function to optionally filter for a subtree and scale edge widths
+// Update the visualizeTree function to optionally filter for a subtree and scale edge widths
 function visualizeTree(subtreeRootId) {
+  // Only re-render if the tree data has changed
+  if (!treeDataChanged) {
+    return;
+  }
+
   var nodes = fullTreeData.nodes;
   var edges = fullTreeData.edges;
 
   // If a subtreeRootId is provided, filter nodes and edges to only those in the subtree
   if (subtreeRootId) {
     var descendants = getDescendants(subtreeRootId, edges);
-    console.log("Filtering for subtree with root ID: " + subtreeRootId, edges);
     nodes = nodes.filter((node) => descendants.includes(Number(node.id)));
     edges = edges.filter(
       (edge) =>
-        descendants.includes(edge.to) || descendants.includes(edge.from),
+        descendants.includes(edge.to) || descendants.includes(edge.from)
     );
-    console.log("Filtered nodes: ", nodes, "Filtered edges: ", edges);
   }
 
   // Calculate min and max weights for scaling after filtering
@@ -185,30 +216,35 @@ function visualizeTree(subtreeRootId) {
     network.focus(subtreeRootId, { scale: 1 });
   }
 
+  // Reset the flag as the tree has been rendered
+  treeDataChanged = false;
 }
 
 // Function to reset the color of all nodes
-function resetNodeColors() {
-    fullTreeData.nodes.forEach(function(node) {
-        node.color = undefined; // Reset to default color
+// Function to update the color of nodes directly in the network
+function updateNodeColors(nodeIds, color) {
+    nodeIds.forEach(function(nodeId) {
+        var nodeToUpdate = network.body.data.nodes.get(nodeId);
+        if (nodeToUpdate) {
+            network.body.data.nodes.update({ id: nodeId, color: color });
+        }
     });
 }
 
 // Function to highlight nodes by changing their color
 function highlightNodes(nodeIds) {
-    resetNodeColors(); // Reset all nodes before highlighting new ones
-    fullTreeData.nodes.forEach(function(node) {
-        if (nodeIds.includes(node.id)) {
-            node.color = { background: 'yellow', border: 'orange' }; // Highlight color
-        }
-    });
-    visualizeTree(); // Re-render the tree with highlighted nodes
+    // First reset all nodes to their default color
+    updateNodeColors(highlightedNodeIds, undefined);
+    // Then apply the highlight color to the search result nodes
+    updateNodeColors(nodeIds, { background: 'yellow', border: 'orange' });
+    // Store the current highlighted node ids
+    highlightedNodeIds = nodeIds;
 }
+
 // Event listener for click events to display subtrees
 network.on("click", function (params) {
   if (params.nodes.length === 1) {
     var nodeId = params.nodes[0];
-    console.log("Node clicked: " + nodeId);
     var nodeId = params.nodes[0];
     visualizeTree(nodeId);
   }
@@ -217,7 +253,6 @@ network.on("click", function (params) {
 // Event listener for right-click events to return to the full tree
 network.on("oncontext", function (params) {
   params.event.preventDefault();
-  console.log("Right-click detected. Returning to full tree view.");
   visualizeTree(); // Pass the full tree data to restore the full view
 });
 
@@ -235,10 +270,10 @@ document.body.addEventListener("drop", function (e) {
     var reader = new FileReader();
     reader.onload = function () {
       var json = JSON.parse(reader.result);
-    console.log("File dropped, processing JSON data...");
       processJsonData(json); // Process the JSON data
-    console.log("Visualizing tree...");
       visualizeTree(); // Visualize the full tree
+// Set the flag to true as the tree data has been updated
+treeDataChanged = true;
 localStorage.setItem('treeData', JSON.stringify(json));
     };
     reader.readAsText(file);
@@ -276,17 +311,23 @@ function scale_edge_width(
 }
 // Simple fuzzy search function to match node labels
 // Enhanced fuzzy search function to match node labels and count descendants
+// with caching to speed up repeated searches
 function fuzzySearch(query, nodes, edges) {
     var results = [];
     var queryLower = query.toLowerCase();
+    // Check if the search results are already cached
+    if (searchCache[queryLower]) {
+        return searchCache[queryLower];
+    }
     nodes.forEach(function(node) {
         if (node.label.toLowerCase().includes(queryLower)) {
             var descendantsCount = getDescendants(node.id, edges).length - 1; // Exclude the node itself
             results.push({ node: node, count: descendantsCount });
         }
     });
+    // Cache the search results
+    searchCache[queryLower] = results;
     return results;
-
 }
 // Event listener for the search input to perform live search and highlight all results
 // Debounce function to limit the rate at which a function can fire
@@ -305,8 +346,8 @@ function debounce(func, wait, immediate) {
     };
 };
 
-// Cache for storing descendants of nodes
-var descendantsCache = {};
+// Cache for storing search results to avoid recalculating the same searches
+var searchCache = {};
 
 // Event listener for the search input to perform live search and highlight all results
 document.getElementById('searchInput').addEventListener('input', debounce(function() {
@@ -329,19 +370,17 @@ document.getElementById('searchInput').addEventListener('input', debounce(functi
             // Highlight all matching nodes
             var matchingNodeIds = searchResults.map(function(result) { return result.node.id; });
             highlightNodes(matchingNodeIds);
-            console.log("Search results: ", searchResults);
         } else {
             searchResultsPopup.innerHTML = 'No matching nodes found.';
-            resetNodeColors(); // Reset node colors if no matches found
+            highlightNodes([]); // Reset node colors if no matches found
             visualizeTree(); // Re-render the tree
-            console.log("No matching nodes found.");
         }
     } else {
         searchResultsPopup.style.display = 'none';
-        resetNodeColors(); // Reset node colors when search is cleared
+        highlightNodes([]); // Reset node colors when search is cleared
         visualizeTree(); // Re-render the tree
     }
-}, 250)); // Debounce rate of 250 milliseconds
+}, 500)); // Increase debounce rate to 500 milliseconds to reduce search frequency
 
 // Event listener for clicking on search result items
 document.addEventListener('click', function(event) {
