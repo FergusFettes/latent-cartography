@@ -21,6 +21,13 @@
         top: 0;
         left: 0;
     }
+#infoBox {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background: #fff;
+    z-index: 10;
+}
 .search-results-popup {
     display: none;
     position: absolute;
@@ -65,6 +72,9 @@ document.addEventListener('DOMContentLoaded', function() {
 <button id="searchButton">Search</button>
 </div>
 <div id="searchResultsPopup" class="search-results-popup"></div>
+<div id="infoBox">
+    <p>Total Nodes: <span id="totalNodes">0</span></p>
+</div>
 <div id="mynetwork"></div>
 
 <script>
@@ -220,6 +230,18 @@ function visualizeTree(subtreeRootId) {
   treeDataChanged = false;
 }
 
+// Function to update the info box with total nodes and FPS
+function updateInfoBox() {
+    var totalNodes = data.nodes.length;
+    document.getElementById('totalNodes').textContent = totalNodes;
+}
+
+// Call updateInfoBox when visualizing the tree
+updateInfoBox();
+
+// Update the info box every second
+setInterval(updateInfoBox, 1000);
+
 // Function to reset the color of all nodes
 // Function to update the color of nodes directly in the network
 function updateNodeColors(nodeIds, color) {
@@ -246,6 +268,7 @@ network.on("click", function (params) {
   if (params.nodes.length === 1) {
     var nodeId = params.nodes[0];
     var nodeId = params.nodes[0];
+    treeDataChanged = true;
     visualizeTree(nodeId);
   }
 });
@@ -253,6 +276,7 @@ network.on("click", function (params) {
 // Event listener for right-click events to return to the full tree
 network.on("oncontext", function (params) {
   params.event.preventDefault();
+  treeDataChanged = true;
   visualizeTree(); // Pass the full tree data to restore the full view
 });
 
