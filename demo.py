@@ -12,9 +12,6 @@ import typer
 app = typer.Typer()
 
 
-prompt = "A typical definition of X would be '"
-
-
 # Define the model names for LLaMA-2, Mistral, and GPT-2
 model_names = {
     "llamatiny": "TinyLlama/TinyLlama-1.1B-intermediate-step-1431k-3T",
@@ -92,6 +89,7 @@ def main(
     word: Optional[str] = typer.Argument(None, help="The word to generate a definition for."),
     model_name: str = "gpt2",
     cutoff: float = 0.0001,
+    prompt: str = typer.Option("A typical definition of X would be '", help="Must contain X, which will be replaced with the word"),
 ):
     device = "cuda" if torch.cuda.is_available() else "cpu"
     print(f"Generating definition for word: {word} using model: {model_name} with cutoff: {cutoff}")
@@ -128,7 +126,7 @@ def main(
     print(f"Elapsed time: {time.time() - start:.2f}s. Nodes: {len(latent_cartographer.nodes)}")
 
     model_name = model_name.replace("/", "-")
-    filename = f"{model_name}_{word}_{cutoff}.json"
+    filename = f"{model_name}_{word}_{cutoff}_{prompt}.json"
     print(f"Saving nodes to {filename}")
     with open(filename, "w") as f:
         json.dump(latent_cartographer.nodes, f, indent=2)
