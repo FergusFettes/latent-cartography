@@ -21,6 +21,37 @@
         top: 0;
         left: 0;
     }
+    #topLevelNodesList {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 200px;
+        height: 100%;
+        overflow-y: auto;
+        background: #f0f0f0;
+        padding: 10px;
+        box-sizing: border-box;
+        z-index: 15;
+        padding-top: 20px; /* Add space for the root node content */
+    }
+    .top-level-node-item {
+        padding: 5px;
+        margin-bottom: 5px;
+        cursor: pointer;
+        border: 1px solid #ccc;
+        background: #fff;
+        transition: background-color 0.3s;
+    }
+    .top-level-node-item:hover {
+        background-color: #e0e0e0;
+    }
+    #subtreeNetwork {
+        height: 100%;
+        width: 100%;
+        position: absolute; /* Positioned relative to the viewport */
+        top: 0;
+        left: 0;
+    }
 #infoBox {
     position: absolute;
     bottom: 10px;
@@ -88,7 +119,17 @@ document.addEventListener('DOMContentLoaded', function() {
 <div id="infoBox">
     <p>Total Nodes: <span id="totalNodes">0</span></p>
 </div>
+<div id="subtreeNetwork"></div>
+<div id="topLevelNodesList"></div>
 <div id="mynetwork"></div>
+<script>
+    // Call populateTopLevelNodesList when the page is loaded
+    document.addEventListener('DOMContentLoaded', function() {
+        if (topLevelNodes.length > 0) {
+            populateTopLevelNodesList();
+        }
+    });
+</script>
 
 <script>
 // Create a network
@@ -153,34 +194,78 @@ var highlightedNodeIds = [];
 // Keep track of the current search result index
 var currentSearchResultIndex = 0;
 // Function to process JSON and store it in fullTreeData
+var rootId = null; // To identify the root node
 function processJsonData(json) {
-  var nodes = [];
-  var edges = [];
-  for (var key in json) {
-    if (json.hasOwnProperty(key)) {
-      var node = json[key];
-      var numericKey = Number(key);
-      nodes.push({
-        id: numericKey,
-        label: node.word,
-        shape: "box",
-        color: {
-          background: "white",
-          border: "#135061",
-          // border: "white"
-        },
-        borderWidth: 1,
-        probability: node.prob,
-      });
+    var nodes = [];
+    var edges = [];
+    for (var key in json) {
+        if (json.hasOwnProperty(key)) {
+            var node = json[key];
+            var numericKey = Number(key);
+            nodes.push({
+                id: numericKey,
+                label: node.word,
+                shape: "box",
+                color: {
+                    background: "white",
+                    border: "#135061",
+                },
+                borderWidth: 1,
+                probability: node.prob,
+            });
 
-      if (node.parent !== null) {
-        edges.push({ from: Number(node.parent), to: numericKey});
-      }
+            if (node.parent !== null) {
+                edges.push({ from: Number(node.parent), to: numericKey });
+            } else {
+                rootId = numericKey; // Found the root node
+            }
+        }
     }
-  }
-  fullTreeData = { nodes: nodes, edges: edges };
-  // Set the flag to true as the tree data has been updated
-  treeDataChanged = true;
+    fullTreeData = { nodes: nodes, edges: edges };
+    // Set the flag to true as the tree data has been updated
+    treeDataChanged = true;
+
+    // Identify top-level nodes (children of the root node)
+    if (rootId !== null) {
+        topLevelNodes = edges.filter(edge => edge.from === rootId).map(edge => {
+            return nodes.find(node => node.id === edge.to);
+        });
+    }
+    populateTopLevelNodesList(); // Populate the list of top-level nodes
+}
+// Store top-level nodes globally
+var topLevelNodes = [];
+
+// Function to populate the list of top-level nodes with optional path nodes in bold
+function populateTopLevelNodesList(pathNodeIds = [rootId]) {
+    var listContainer = document.getElementById('topLevelNodesList');
+    listContainer.innerHTML = ''; // Clear existing list items including the previous root node
+
+    // Add the path nodes in bold at the top of the list
+    pathNodeIds.forEach(function(nodeId) {
+        var node = fullTreeData.nodes.find(node => node.id === nodeId);
+        if (node) {
+            var listItem = document.createElement('div');
+            listItem.className = 'top-level-node-item';
+            listItem.style.fontWeight = 'bold';
+            listItem.textContent = node.label;
+            listItem.onclick = function() {
+                network.focus(node.id, { scale: 1 });
+            };
+            listContainer.appendChild(listItem);
+        }
+    });
+
+    // Add the top-level nodes below the path nodes
+    topLevelNodes.forEach(function(node) {
+        var listItem = document.createElement('div');
+        listItem.className = 'top-level-node-item';
+        listItem.textContent = node.label;
+        listItem.onclick = function() {
+            network.focus(node.id, { scale: 1 });
+        };
+        listContainer.appendChild(listItem);
+    });
 }
 
 // Memoization cache for getDescendants function
@@ -224,66 +309,59 @@ function getDescendants(nodeId, edges) {
 }
 
 // Update the visualizeTree function to optionally filter for a subtree and scale edge widths
-function visualizeTree(subtreeRootId) {
-  // Only re-render if the tree data has changed
-  if (!treeDataChanged) {
-    return;
-  }
-
-  var nodes = fullTreeData.nodes;
-  var edges = fullTreeData.edges;
-
-  // If a subtreeRootId is provided, filter nodes and edges to only those in the subtree
-  if (subtreeRootId) {
-    var descendants = getDescendants(subtreeRootId, edges);
-    nodes = nodes.filter((node) => descendants.includes(Number(node.id)));
-    edges = edges.filter(
-      (edge) =>
-        descendants.includes(edge.to) || descendants.includes(edge.from),
-    );
-  }
-
-  // Calculate min and max weights for scaling after filtering
-  var min_weight = Number.POSITIVE_INFINITY;
-  var max_weight = 0;
-
-  nodes.forEach(function (node) {
-    if (node.probability < min_weight) {
-      min_weight = node.probability;
+function visualizeTree(subtreeRootId, targetNetwork = network, isSubtree = false) {
+    if (!treeDataChanged && !isSubtree) {
+        return;
     }
-    if (node.probability > max_weight) {
-      max_weight = node.probability;
-    }
-  });
 
-  // Scale edge widths based on node probabilities
-  edges = edges.map(function (edge) {
-    return {
-      from: edge.from,
-      to: edge.to,
-      value: scale_edge_width(
-        nodes.find((node) => node.id === edge.to).probability,
-        max_weight,
-        min_weight,
-        10, // Log base
-      ),
+    var nodes = fullTreeData.nodes;
+    var edges = fullTreeData.edges;
+
+    if (subtreeRootId) {
+        var descendants = getDescendants(subtreeRootId, edges);
+        nodes = nodes.filter((node) => descendants.includes(Number(node.id)));
+        edges = edges.filter(
+            (edge) => descendants.includes(edge.to) || descendants.includes(edge.from)
+        );
+    }
+
+    var min_weight = Number.POSITIVE_INFINITY;
+    var max_weight = 0;
+
+    nodes.forEach(function (node) {
+        if (node.probability < min_weight) {
+            min_weight = node.probability;
+        }
+        if (node.probability > max_weight) {
+            max_weight = node.probability;
+        }
+    });
+
+    edges = edges.map(function (edge) {
+        return {
+            from: edge.from,
+            to: edge.to,
+            value: scale_edge_width(
+                nodes.find((node) => node.id === edge.to).probability,
+                max_weight,
+                min_weight,
+                10
+            ),
+        };
+    });
+
+    var data = {
+        nodes: new vis.DataSet(nodes),
+        edges: new vis.DataSet(edges)
     };
-  });
 
-  // Update vis.js data
-  data.nodes.clear();
-  data.edges.clear();
-  data.nodes.add(nodes);
-  data.edges.add(edges);
+    targetNetwork.setData(data);
 
-  // If a subtreeRootId is provided, recenter the view on the subtree
-  if (subtreeRootId) {
-    var subtreeRoot = nodes.find((node) => node.id === subtreeRootId);
-    network.focus(subtreeRootId, { scale: 1 });
-  }
+    if (subtreeRootId) {
+        targetNetwork.fit({ nodes: [subtreeRootId], animation: false });
+    }
 
-  // Reset the flag as the tree has been rendered
-  treeDataChanged = false;
+    treeDataChanged = false;
 }
 
 // Function to update the info box with total nodes and FPS
@@ -319,22 +397,84 @@ function highlightNodes(nodeIds) {
   highlightedNodeIds = nodeIds;
 }
 
-// Event listener for click events to display subtrees
 network.on("click", function (params) {
-  if (params.nodes.length === 1) {
-    var nodeId = params.nodes[0];
-    var nodeId = params.nodes[0];
-    treeDataChanged = true;
-    visualizeTree(nodeId);
-  }
+    if (params.nodes.length === 1) {
+        var nodeId = params.nodes[0];
+        var mainTreeDiv = document.getElementById('mynetwork');
+        var subtreeDiv = document.getElementById('subtreeNetwork');
+        mainTreeDiv.style.display = 'none';
+        subtreeDiv.style.display = 'block';
+        var subtreeContainer = document.getElementById('subtreeNetwork');
+        var subtreeData = {
+            nodes: new vis.DataSet([]),
+            edges: new vis.DataSet([])
+        };
+        var subtreeOptions = {
+            layout: {
+                hierarchical: {
+                    direction: "LR", // Left to Right
+                    sortMethod: "directed", // Directed layout to respect the direction of edges
+                    levelSeparation: 45,
+                    nodeSpacing: 25,
+                },
+            },
+            physics: {
+                enabled: false, // Disable physics for hierarchical layout
+            }
+        };
+        var subtreeNetwork = new vis.Network(subtreeContainer, subtreeData, subtreeOptions);
+
+        subtreeNetwork.on("oncontext", function (params) {
+            params.event.preventDefault();
+            subtreeDiv.style.display = 'none';
+            mainTreeDiv.style.display = 'block';
+            // When exiting the subtree, reset the top-level nodes list to the main tree's top-level nodes
+            topLevelNodes = fullTreeData.edges.filter(edge => edge.from === 0).map(edge => {
+                return fullTreeData.nodes.find(node => node.id === edge.to);
+            });
+            populateTopLevelNodesList();
+        });
+
+        subtreeNetwork.on("click", function (params) {
+            if (params.nodes.length === 1) {
+                var nodeId = params.nodes[0];
+                visualizeTree(nodeId, subtreeNetwork, true);
+
+                // Update the top-level nodes list to show the children of the clicked node
+                var clickedNodeEdges = fullTreeData.edges.filter(edge => edge.from === nodeId);
+                topLevelNodes = clickedNodeEdges.map(edge => {
+                    return fullTreeData.nodes.find(node => node.id === edge.to);
+                });
+                populateTopLevelNodesList(getPath(nodeId));
+            }
+        });
+        visualizeTree(nodeId, subtreeNetwork, true);
+
+        // Update the top-level nodes list to show the children of the clicked node
+        var clickedNodeEdges = fullTreeData.edges.filter(edge => edge.from === nodeId);
+        topLevelNodes = clickedNodeEdges.map(edge => {
+            return fullTreeData.nodes.find(node => node.id === edge.to);
+        });
+        populateTopLevelNodesList(getPath(nodeId));
+    }
 });
 
-// Event listener for right-click events to return to the full tree
-network.on("oncontext", function (params) {
-  params.event.preventDefault();
-  treeDataChanged = true;
-  visualizeTree(); // Pass the full tree data to restore the full view
-});
+// Function to get the path from the root to a node
+function getPath(nodeId) {
+  var path = [];
+  var currentId = nodeId;
+  while (currentId !== rootId) {
+    var edge = fullTreeData.edges.find((edge) => edge.to === currentId);
+    if (edge) {
+      path.unshift(edge.to);
+      currentId = edge.from;
+    } else {
+      break;
+    }
+  }
+  path.unshift(rootId); // Add the root node to the path
+  return path;
+}
 
 // Event listener for dragover to allow for the drop action
 document.body.addEventListener("dragover", function (e) {
