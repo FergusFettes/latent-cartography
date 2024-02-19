@@ -17,7 +17,8 @@ prompt = "A typical definition of X would be '"
 
 # Define the model names for LLaMA-2, Mistral, and GPT-2
 model_names = {
-    "llama": "TinyLlama/TinyLlama-1.1B-intermediate-step-1431k-3T",
+    "llamatiny": "TinyLlama/TinyLlama-1.1B-intermediate-step-1431k-3T",
+    "llama": "meta-llama/Llama-2-13b-hf",
     "gpt2": "gpt2",
     # "mamba": "MrGonao/delphi-mamba-100k",
     "mistral": "mistralai/Mistral-7B-v0.1",
