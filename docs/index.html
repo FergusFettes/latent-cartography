@@ -21,6 +21,13 @@
         top: 0;
         left: 0;
     }
+#infoBox {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background: #fff;
+    z-index: 10;
+}
 .search-results-popup {
     display: none;
     position: absolute;
@@ -40,8 +47,7 @@
 
 <script>
 // Define a global variable to hold the raw JSON data
-var rawJsonData = {"0":{"token":null,"word":"A typical definition of X would be '","prob":1,"parent":null},"2":{"token":64,"word":"a","prob":0.18624581396579742,"parent":0},"3":{"token":1048,"word":" person","prob":0.014373630096524703,"parent":2},"4":{"token":508,"word":" who","prob":0.004697396823023005,"parent":3},"5":{"token":318,"word":" is","prob":0.001150705451504927,"parent":4},"6":{"token":468,"word":" has","prob":0.0005103561654312279,"parent":4},"7":{"token":857,"word":" does","prob":0.0003020552532546688,"parent":4},"8":{"token":393,"word":" or","prob":0.0021387173466141636,"parent":3},"9":{"token":1517,"word":" thing","prob":0.0012221282045005648,"parent":8},"10":{"token":326,"word":" that","prob":0.00048552885064153723,"parent":9},"11":{"token":318,"word":" is","prob":0.00016057533502701585,"parent":10},"12":{"token":5044,"word":" animal","prob":0.00026919561307048453,"parent":8},"13":{"token":1448,"word":" group","prob":0.00013292524612495626,"parent":8},"14":{"token":338,"word":"'s","prob":0.0009657603354219712,"parent":3},"15":{"token":286,"word":" of","prob":0.0006715930510824492,"parent":3},"16":{"token":6,"word":"'","prob":0.0004371585170437569,"parent":3},"17":{"token":393,"word":" or","prob":0.00010129852161623917,"parent":16},"18":{"token":705,"word":" '","prob":0.00041902911848034214,"parent":3},"19":{"token":351,"word":" with","prob":0.0002739978923729354,"parent":3},"20":{"token":3025,"word":" whose","prob":0.00022367515915152047,"parent":3},"21":{"token":1517,"word":" thing","prob":0.004804939915054457,"parent":2},"22":{"token":326,"word":" that","prob":0.0013049126022637897,"parent":21},"23":{"token":318,"word":" is","prob":0.0003984961765669177,"parent":22},"24":{"token":393,"word":" or","prob":0.0003739425271097298,"parent":21},"25":{"token":543,"word":" which","prob":0.00029494134764686925,"parent":21},"26":{"token":286,"word":" of","prob":0.0002788520622677186,"parent":21},"27":{"token":973,"word":" used","prob":0.00015927576831653155,"parent":21},"28":{"token":6,"word":"'","prob":0.00010528961648317427,"parent":21},"29":{"token":582,"word":" man","prob":0.002571433099608708,"parent":2},"30":{"token":508,"word":" who","prob":0.00044365570163174337,"parent":29},"31":{"token":318,"word":" is","prob":0.00010441607407178866,"parent":30},"32":{"token":338,"word":"'s","prob":0.0002831910960679254,"parent":29},"33":{"token":286,"word":" of","prob":0.0002473296493261218,"parent":29},"34":{"token":393,"word":" or","prob":0.0002090852089473262,"parent":29},"35":{"token":351,"word":" with","prob":0.00013112173329051177,"parent":29},"36":{"token":6,"word":"'","prob":0.000124155401555769,"parent":29},"37":{"token":1402,"word":" small","prob":0.0025650966175252976,"parent":2},"38":{"token":3704,"word":" piece","prob":0.00010574899700679278,"parent":37},"39":{"token":2415,"word":" woman","prob":0.0025292956932271987,"parent":2},"40":{"token":508,"word":" who","prob":0.000627893152407507,"parent":39},"41":{"token":318,"word":" is","prob":0.00020342409598018916,"parent":40},"42":{"token":468,"word":" has","prob":0.0001239436124486439,"parent":40},"43":{"token":338,"word":"'s","prob":0.0003213595619565459,"parent":39},"44":{"token":286,"word":" of","prob":0.00019455637132588887,"parent":39},"45":{"token":393,"word":" or","prob":0.0001503019552051262,"parent":39},"46":{"token":6,"word":"'","prob":0.00010789614029873259,"parent":39},"47":{"token":1295,"word":" place","prob":0.002101684537004142,"parent":2},"48":{"token":810,"word":" where","prob":0.0006455324187693511,"parent":47},"49":{"token":286,"word":" of","prob":0.0004721325234139381,"parent":47},"50":{"token":11892,"word":" worship","prob":0.00010617720480983748,"parent":49},"51":{"token":393,"word":" or","prob":0.00016594351790022248,"parent":47},"52":{"token":329,"word":" for","prob":0.0001652711772913474,"parent":47},"53":{"token":1588,"word":" large","prob":0.0019868598010683997,"parent":2},"54":{"token":3704,"word":" piece","prob":0.00194909796877564,"parent":2},"55":{"token":286,"word":" of","prob":0.0016987653082466076,"parent":54},"56":{"token":4898,"word":" wood","prob":0.00014954136594122792,"parent":55},"57":{"token":16270,"word":" cloth","prob":0.0001387502139387112,"parent":55},"58":{"token":4048,"word":" female","prob":0.0017863646339950218,"parent":2},"59":{"token":3290,"word":" dog","prob":0.00033926239306920463,"parent":58},"60":{"token":286,"word":" of","prob":0.00014427109730160982,"parent":58},"61":{"token":1448,"word":" group","prob":0.001705356151037174,"parent":2},"62":{"token":286,"word":" of","prob":0.0012995353015505897,"parent":61},"63":{"token":661,"word":" people","prob":0.0004180687258301678,"parent":62},"64":{"token":508,"word":" who","prob":0.00010097780939831509,"parent":63},"65":{"token":1169,"word":"the","prob":0.07666194438934326,"parent":0},"66":{"token":636,"word":" part","prob":0.003267210085324379,"parent":65},"67":{"token":286,"word":" of","prob":0.0026918531697533656,"parent":66},"68":{"token":262,"word":" the","prob":0.0011115152727405463,"parent":67},"69":{"token":1767,"word":" body","prob":0.00033593892593252855,"parent":68},"70":{"token":257,"word":" a","prob":0.0009524073308075587,"parent":67},"71":{"token":281,"word":" an","prob":0.00019915146991519563,"parent":67},"72":{"token":1223,"word":" something","prob":0.00010249328227636328,"parent":67},"73":{"token":326,"word":" that","prob":0.00011981025921014921,"parent":66},"74":{"token":719,"word":" act","prob":0.0025999180213704953,"parent":65},"75":{"token":286,"word":" of","prob":0.0019040593946257935,"parent":74},"76":{"token":393,"word":" or","prob":0.0005533925623782688,"parent":74},"77":{"token":1429,"word":" process","prob":0.00021889934974540524,"parent":76},"78":{"token":286,"word":" of","prob":0.00020638832416297118,"parent":77},"79":{"token":717,"word":" first","prob":0.001185859323112215,"parent":65},"80":{"token":1271,"word":" number","prob":0.001047547627888612,"parent":65},"81":{"token":286,"word":" of","prob":0.0007712662893557902,"parent":80},"82":{"token":1048,"word":" person","prob":0.0010423934071032148,"parent":65},"83":{"token":508,"word":" who","prob":0.00034336153333303847,"parent":82},"84":{"token":393,"word":" or","prob":0.00016748426612072444,"parent":82},"85":{"token":1517,"word":" thing","prob":0.00010467789593077709,"parent":84},"86":{"token":1517,"word":" thing","prob":0.0007976500620446858,"parent":65},"87":{"token":326,"word":" that","prob":0.00022139665108166184,"parent":86},"88":{"token":749,"word":" most","prob":0.0007436724311433718,"parent":65},"89":{"token":1593,"word":" important","prob":0.00012122237587621795,"parent":88},"90":{"token":1989,"word":" area","prob":0.0006227147047906945,"parent":65},"91":{"token":286,"word":" of","prob":0.00016207035558825198,"parent":90},"92":{"token":1767,"word":" body","prob":0.0005811855691209011,"parent":65},"93":{"token":286,"word":" of","prob":0.0002731970543573018,"parent":92},"94":{"token":1429,"word":" process","prob":0.0005657318313896376,"parent":65},"95":{"token":286,"word":" of","prob":0.00038813832829470474,"parent":94},"96":{"token":1462,"word":"to","prob":0.04555822163820267,"parent":0},"97":{"token":787,"word":" make","prob":0.0024076900921801425,"parent":96},"98":{"token":1223,"word":" something","prob":0.0004019226074727502,"parent":97},"99":{"token":257,"word":" a","prob":0.00028545217054919006,"parent":97},"100":{"token":393,"word":" or","prob":0.00019460802997817923,"parent":97},"101":{"token":307,"word":" be","prob":0.0021762020730056453,"parent":96},"102":{"token":287,"word":" in","prob":0.00026323362360317944,"parent":101},"103":{"token":466,"word":" do","prob":0.0021051056727355577,"parent":96},"104":{"token":1223,"word":" something","prob":0.0008644340087934638,"parent":103},"105":{"token":393,"word":" or","prob":0.0001423779433349664,"parent":103},"106":{"token":257,"word":" a","prob":0.00010566452674567942,"parent":103},"107":{"token":1445,"word":" move","prob":0.0010103971905873338,"parent":96},"108":{"token":423,"word":" have","prob":0.0009001686636001122,"parent":96},"109":{"token":257,"word":" a","prob":0.0001435131900174208,"parent":108},"110":{"token":262,"word":" the","prob":0.00010221292431462536,"parent":108},"111":{"token":1234,"word":" put","prob":0.0008853858362516953,"parent":96},"112":{"token":262,"word":" the","prob":0.0008253875244928904,"parent":96},"113":{"token":2728,"word":" cause","prob":0.0007714949731506826,"parent":96},"114":{"token":284,"word":" to","prob":0.0002059725724433493,"parent":113},"115":{"token":1577,"word":" give","prob":0.0007181761521589392,"parent":96},"116":{"token":467,"word":" go","prob":0.0006582584562606492,"parent":96},"117":{"token":272,"word":"an","prob":0.033826787024736404,"parent":0},"118":{"token":5044,"word":" animal","prob":0.0023240542802177855,"parent":117},"119":{"token":326,"word":" that","prob":0.0006072679667121157,"parent":118},"120":{"token":318,"word":" is","prob":0.000130689952512748,"parent":119},"121":{"token":351,"word":" with","prob":0.00020350068154275147,"parent":118},"122":{"token":286,"word":" of","prob":0.00018676071413778196,"parent":118},"123":{"token":393,"word":" or","prob":0.00016264534246304083,"parent":118},"124":{"token":543,"word":" which","prob":0.0001312938441749263,"parent":118},"125":{"token":2134,"word":" object","prob":0.000959512098338236,"parent":117},"126":{"token":326,"word":" that","prob":0.00018895097568985688,"parent":125},"127":{"token":393,"word":" or","prob":0.00016110280670354903,"parent":125},"128":{"token":719,"word":" act","prob":0.0009423049935210273,"parent":117},"129":{"token":286,"word":" of","prob":0.0004567896496286843,"parent":128},"130":{"token":393,"word":" or","prob":0.00019010455190088355,"parent":128},"131":{"token":8875,"word":" instrument","prob":0.0005896816104353844,"parent":117},"132":{"token":1981,"word":" individual","prob":0.0005018786685555623,"parent":117},"133":{"token":1468,"word":" old","prob":0.0004402213307124238,"parent":117},"134":{"token":2033,"word":" amount","prob":0.00043964320722424816,"parent":117},"135":{"token":286,"word":" of","prob":0.0002705775841506253,"parent":134},"136":{"token":1989,"word":" area","prob":0.0004097151804116489,"parent":117},"137":{"token":286,"word":" of","prob":0.0001730018086371033,"parent":136},"138":{"token":2708,"word":" article","prob":0.00039392529881056293,"parent":117},"139":{"token":286,"word":" of","prob":0.0001700554700799877,"parent":138},"140":{"token":9528,"word":" clothing","prob":0.00011798684218112397,"parent":139},"141":{"token":2223,"word":" action","prob":0.0003521183165627051,"parent":117},"142":{"token":18927,"word":"something","prob":0.029843980446457863,"parent":0},"143":{"token":326,"word":" that","prob":0.011382937638362012,"parent":142},"144":{"token":318,"word":" is","prob":0.003270489870770826,"parent":143},"145":{"token":407,"word":" not","prob":0.00022406578003064263,"parent":144},"146":{"token":973,"word":" used","prob":0.00012288228175309462,"parent":144},"147":{"token":468,"word":" has","prob":0.0006147917418763884,"parent":143},"148":{"token":587,"word":" been","prob":0.0001057375322274198,"parent":147},"149":{"token":460,"word":" can","prob":0.0005203015830351474,"parent":143},"150":{"token":307,"word":" be","prob":0.0003310360618005635,"parent":149},"151":{"token":345,"word":" you","prob":0.00024421419703809166,"parent":143},"152":{"token":857,"word":" does","prob":0.00021787247411902098,"parent":143},"153":{"token":407,"word":" not","prob":0.00010369532029007622,"parent":152},"154":{"token":1838,"word":" makes","prob":0.000198451417958923,"parent":143},"155":{"token":4325,"word":" happens","prob":0.0001979089976357258,"parent":143},"156":{"token":6622,"word":" holds","prob":0.0001504771147027131,"parent":143},"157":{"token":5640,"word":" causes","prob":0.00014766317808644113,"parent":143},"158":{"token":5419,"word":" helps","prob":0.00014618313579777516,"parent":143},"159":{"token":543,"word":" which","prob":0.0018391885516993306,"parent":142},"160":{"token":318,"word":" is","prob":0.0005843512545871183,"parent":159},"161":{"token":468,"word":" has","prob":0.0001028130655407562,"parent":159},"162":{"token":460,"word":" can","prob":0.00010245092206113844,"parent":159},"163":{"token":393,"word":" or","prob":0.0014178127425298892,"parent":142},"164":{"token":2130,"word":" someone","prob":0.0010589641996133644,"parent":163},"165":{"token":326,"word":" that","prob":0.00044399442250114195,"parent":164},"166":{"token":318,"word":" is","prob":0.0001625968178268218,"parent":165},"167":{"token":8276,"word":" somebody","prob":0.00014139234838775658,"parent":163},"168":{"token":345,"word":" you","prob":0.000789770096263874,"parent":142},"169":{"token":466,"word":" do","prob":0.00017482204762680676,"parent":168},"170":{"token":284,"word":" to","prob":0.0007235562848196576,"parent":142},"171":{"token":4483,"word":" eat","prob":0.00015135559348407028,"parent":170},"172":{"token":466,"word":" do","prob":0.00011957557078028377,"parent":170},"173":{"token":286,"word":" of","prob":0.0005357006235818737,"parent":142},"174":{"token":1988,"word":" value","prob":0.00018744669705278463,"parent":173},"175":{"token":287,"word":" in","prob":0.0005308580100252779,"parent":142},"176":{"token":262,"word":" the","prob":0.0001511769507615374,"parent":175},"177":{"token":973,"word":" used","prob":0.0003249839240270294,"parent":142},"178":{"token":284,"word":" to","prob":0.00013409171192936645,"parent":177},"179":{"token":530,"word":" one","prob":0.0003159410248670773,"parent":142},"180":{"token":505,"word":"one","prob":0.024851134046912193,"parent":0},"181":{"token":508,"word":" who","prob":0.0056311264115854465,"parent":180},"182":{"token":318,"word":" is","prob":0.0009126486912325269,"parent":181},"183":{"token":468,"word":" has","prob":0.0004039836038365389,"parent":181},"184":{"token":857,"word":" does","prob":0.00027092163540653563,"parent":181},"185":{"token":286,"word":" of","prob":0.004899859693294234,"parent":180},"186":{"token":262,"word":" the","prob":0.0018946044747549119,"parent":185},"187":{"token":257,"word":" a","prob":0.000916869293102295,"parent":185},"188":{"token":1611,"word":" kind","prob":0.0001790765393184758,"parent":187},"189":{"token":1271,"word":" number","prob":0.00013941907831197371,"parent":187},"190":{"token":1448,"word":" group","prob":0.00011130137299824354,"parent":187},"191":{"token":2168,"word":" series","prob":0.0001019266868856783,"parent":187},"192":{"token":734,"word":" two","prob":0.0003143480402612504,"parent":185},"193":{"token":867,"word":" many","prob":0.00020100149169780023,"parent":185},"194":{"token":883,"word":" those","prob":0.0001472495006434468,"parent":185},"195":{"token":1223,"word":" something","prob":0.00014410098996892311,"parent":185},"196":{"token":1811,"word":" several","prob":0.00013049265147859477,"parent":185},"197":{"token":1115,"word":" three","prob":0.00010042156260065772,"parent":185},"198":{"token":326,"word":" that","prob":0.001130529663431648,"parent":180},"199":{"token":318,"word":" is","prob":0.00035364017964816484,"parent":198},"200":{"token":393,"word":" or","prob":0.0007555489665152758,"parent":180},"201":{"token":517,"word":" more","prob":0.0005645484937488397,"parent":200},"202":{"token":705,"word":" '","prob":0.0007283713047923183,"parent":180},"203":{"token":393,"word":" or","prob":0.00012369934891108344,"parent":202},"204":{"token":705,"word":" '","prob":0.00010720358916066872,"parent":203},"205":{"token":338,"word":"'s","prob":0.00043265715236207383,"parent":180},"206":{"token":290,"word":" and","prob":0.00043217963664442596,"parent":180},"207":{"token":691,"word":" only","prob":0.0002514755935633,"parent":206},"208":{"token":6,"word":"'","prob":0.00041383055361432844,"parent":180},"209":{"token":1517,"word":" thing","prob":0.0003828993757971147,"parent":180},"210":{"token":32,"word":"A","prob":0.02465680055320263,"parent":0},"211":{"token":1048,"word":" person","prob":0.0014081602689715172,"parent":210},"212":{"token":508,"word":" who","prob":0.00043697285241151365,"parent":211},"213":{"token":318,"word":" is","prob":0.0001135246949274442,"parent":212},"214":{"token":393,"word":" or","prob":0.00024200263914359488,"parent":211},"215":{"token":1517,"word":" thing","prob":0.00014501759057196543,"parent":214},"216":{"token":1517,"word":" thing","prob":0.0008379738614664248,"parent":210},"217":{"token":326,"word":" that","prob":0.0002214096778633723,"parent":216},"218":{"token":705,"word":" '","prob":0.0005116685024559448,"parent":210},"219":{"token":582,"word":" man","prob":0.00039486108668189066,"parent":210},"220":{"token":2415,"word":" woman","prob":0.00032031245360496924,"parent":210},"221":{"token":1295,"word":" place","prob":0.000302098982192708,"parent":210},"222":{"token":3704,"word":" piece","prob":0.000237316560229189,"parent":210},"223":{"token":286,"word":" of","prob":0.00020474477599561957,"parent":222},"224":{"token":4048,"word":" female","prob":0.00017567447985196612,"parent":210},"225":{"token":1271,"word":" number","prob":0.0001741148148303182,"parent":210},"226":{"token":1402,"word":" small","prob":0.00015793229849737304,"parent":210},"227":{"token":5562,"word":"that","prob":0.015726672485470772,"parent":0},"228":{"token":543,"word":" which","prob":0.009118735433691239,"parent":227},"229":{"token":318,"word":" is","prob":0.0037010284021460602,"parent":228},"230":{"token":407,"word":" not","prob":0.00013931451874163605,"parent":229},"231":{"token":287,"word":" in","prob":0.00012162880744468111,"parent":229},"232":{"token":468,"word":" has","prob":0.00044667769475693046,"parent":228},"233":{"token":587,"word":" been","prob":0.00014104627093656353,"parent":232},"234":{"token":460,"word":" can","prob":0.0001659636753393388,"parent":228},"235":{"token":307,"word":" be","prob":0.00012032176927436746,"parent":234},"236":{"token":1838,"word":" makes","prob":0.00013116541575880722,"parent":228},"237":{"token":6296,"word":" stands","prob":0.00011837113168540964,"parent":228},"238":{"token":857,"word":" does","prob":0.00010755522275230182,"parent":228},"239":{"token":318,"word":" is","prob":0.0008921957825356389,"parent":227},"240":{"token":705,"word":" '","prob":0.0003610208592064561,"parent":227},"241":{"token":1517,"word":" thing","prob":0.0003371930003911762,"parent":227},"242":{"token":286,"word":" of","prob":0.00026432429450014977,"parent":227},"243":{"token":636,"word":" part","prob":0.0002252618719066641,"parent":227},"244":{"token":286,"word":" of","prob":0.0001893391951801153,"parent":243},"245":{"token":287,"word":" in","prob":0.0001259019245874668,"parent":227},"246":{"token":329,"word":" for","prob":0.00011374887470481237,"parent":227},"247":{"token":543,"word":" which","prob":0.00010078268015245938,"parent":246},"248":{"token":1048,"word":" person","prob":0.00010418531531227251,"parent":227},"249":{"token":464,"word":"The","prob":0.012841697782278061,"parent":0},"250":{"token":636,"word":" part","prob":0.00029932050579806885,"parent":249},"251":{"token":286,"word":" of","prob":0.0002494354972922173,"parent":250},"252":{"token":262,"word":" the","prob":0.00010419541257446429,"parent":251},"253":{"token":719,"word":" act","prob":0.0002565329705081845,"parent":249},"254":{"token":286,"word":" of","prob":0.0001866669618269331,"parent":253},"255":{"token":717,"word":" first","prob":0.00020193251414789282,"parent":249},"256":{"token":749,"word":" most","prob":0.00016790422559091397,"parent":249},"257":{"token":1048,"word":" person","prob":0.0001625748714614919,"parent":249},"258":{"token":1271,"word":" number","prob":0.00013394001744430895,"parent":249},"259":{"token":1517,"word":" thing","prob":0.0001234538287673316,"parent":249},"260":{"token":1295,"word":" place","prob":0.00010863781119732283,"parent":249},"261":{"token":1659,"word":"of","prob":0.011974060907959938,"parent":0},"262":{"token":262,"word":" the","prob":0.0021764140320484904,"parent":261},"263":{"token":976,"word":" same","prob":0.00016103746818167908,"parent":262},"264":{"token":257,"word":" a","prob":0.001497578914871206,"parent":261},"265":{"token":1728,"word":" certain","prob":0.00014367260160787738,"parent":264},"266":{"token":705,"word":" '","prob":0.00060823825980931,"parent":261},"267":{"token":393,"word":" or","prob":0.0001500772148421061,"parent":266},"268":{"token":705,"word":" '","prob":0.00012602432538130813,"parent":267},"269":{"token":393,"word":" or","prob":0.0005381108003547561,"parent":261},"270":{"token":11270,"word":" relating","prob":0.00017530753497207186,"parent":269},"271":{"token":284,"word":" to","prob":0.00017312490746030225,"parent":270},"272":{"token":27113,"word":" pertaining","prob":0.00012799136739340776,"parent":269},"273":{"token":284,"word":" to","prob":0.00012567913015790527,"parent":272},"274":{"token":1223,"word":" something","prob":0.00022549957391258466,"parent":261},"275":{"token":530,"word":" one","prob":0.0001825775218142721,"parent":261},"276":{"token":281,"word":" an","prob":0.00016333677956646003,"parent":261},"277":{"token":6,"word":"'","prob":0.0001600381697022986,"parent":261}};
-
+var rawJsonData = {}; // Replace with actual JSON data if needed
 </script>
 <script>
 // Load JSON data from local storage if available
@@ -62,10 +68,26 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 <div style="position: absolute; top: 10px; right: 10px; z-index: 5;">
     <button id="clearButton">Clear</button>
+<select id="datasetDropdown">
+    <option value="">Select a dataset</option>
+    <option value="fergusfettes/gpt2_noken_1e-06_AtypicaldefinitionofXwouldbe">GPT-2 Centroid</option>
+    <option value="fergusfettes/gpt2_noken_1e-05_AtypicaldefinitionofXwouldbeawoman">GPT-2 Centroid Woman</option>
+    <option value="fergusfettes/gpt2_noken_1e-05_AtypicaldefinitionofXwouldbeaman">GPT-2 Centroid Man</option>
+    <option value="fergusfettes/EleutherAI-gpt-j-6B_noken_1e-06_AtypicaldefinitionofXwouldbe">GPT-J Centroid</option>
+    <option value="fergusfettes/EleutherAI-gpt-j-6B_noken_1e-05_AtypicaldefinitionofXwouldbeawoman">GPT-J Centroid Woman</option>
+    <option value="fergusfettes/EleutherAI-gpt-j-6B_noken_1e-05_AtypicaldefinitionofXwouldbeaman">GPT-J Centroid Man</option>
+    <option value="fergusfettes/mistralai-Mistral-7B-v0.1_noken_1e-06_AtypicaldefinitionofXwouldbe">Mistral Centroid</option>
+    <option value="fergusfettes/mistralai-Mistral-7B-v0.1_noken_1e-05_AtypicaldefinitionofXwouldbeawoman">Mistral Centroid Woman</option>
+    <option value="fergusfettes/mistralai-Mistral-7B-v0.1_noken_1e-05_AtypicaldefinitionofXwouldbeaman">Mistral Centroid Man</option>
+</select>
 <input type="text" id="searchInput" placeholder="Search nodes...">
 <button id="searchButton">Search</button>
+<button id="switchLayoutButton">Dynamics</button>
 </div>
 <div id="searchResultsPopup" class="search-results-popup"></div>
+<div id="infoBox">
+    <p>Total Nodes: <span id="totalNodes">0</span></p>
+</div>
 <div id="mynetwork"></div>
 
 <script>
@@ -75,76 +97,150 @@ var data = {
   nodes: new vis.DataSet([]),
   edges: new vis.DataSet([]),
 };
-var options = {
+var optionsHierarchical = {
   layout: {
     hierarchical: {
       direction: "LR", // Left to Right
       sortMethod: "directed", // Directed layout to respect the direction of edges
-      levelSeparation: 50,
-      nodeSpacing: 30,
+      levelSeparation: 45,
+      nodeSpacing: 25,
     },
   },
   physics: {
     enabled: false, // Disable physics for hierarchical layout
-  },
+  }
 };
-var network = new vis.Network(container, data, options);
+
+var network = new vis.Network(container, data, optionsHierarchical);
+
+
+document.getElementById('switchLayoutButton').addEventListener('click', function() {
+  // Define your physics-based options
+  var optionsPhysics = {
+    physics: {
+      barnesHut: {
+        gravitationalConstant: -20000,
+        centralGravity: 0.3,
+        springLength: 20,
+        springConstant: 0.25,
+        damping: 0.05,
+        avoidOverlap: 0.1
+      },
+      solver: 'barnesHut',
+      stabilization: {
+        enabled: true,
+        iterations: 1000,
+        updateInterval: 10,
+        onlyDynamicEdges: false,
+        fit: true
+      }
+    },
+    layout: {
+      hierarchical: false // Disable the hierarchical layout
+    }
+  };
+
+  network.setOptions(optionsPhysics);
+});
+
+
 // Store the full tree data globally
 var fullTreeData = { nodes: [], edges: [] };
+// Flag to indicate if the tree data has changed and needs re-rendering
+var treeDataChanged = true;
+// Var to keep track of highlited node ids
+var highlightedNodeIds = [];
 // Keep track of the current search result index
 var currentSearchResultIndex = 0;
 // Function to process JSON and store it in fullTreeData
 function processJsonData(json) {
-    var nodes = [];
-    var edges = [];
-    for (var key in json) {
-        if (json.hasOwnProperty(key)) {
-            var node = json[key];
-            var numericKey = Number(key);
-            nodes.push({ id: numericKey, label: node.word, shape: "box", probability: node.prob });
+  var nodes = [];
+  var edges = [];
+  for (var key in json) {
+    if (json.hasOwnProperty(key)) {
+      var node = json[key];
+      var numericKey = Number(key);
+      nodes.push({
+        id: numericKey,
+        label: node.word,
+        shape: "box",
+        color: {
+          background: "white",
+          border: "#135061",
+          // border: "white"
+        },
+        borderWidth: 1,
+        probability: node.prob,
+      });
 
-            if (node.parent !== null) {
-                edges.push({ from: Number(node.parent), to: numericKey });
-            }
-        }
+      if (node.parent !== null) {
+        edges.push({ from: Number(node.parent), to: numericKey});
+      }
     }
-    fullTreeData = { nodes: nodes, edges: edges };
+  }
+  fullTreeData = { nodes: nodes, edges: edges };
+  // Set the flag to true as the tree data has been updated
+  treeDataChanged = true;
 }
-    console.log("JSON data processed", fullTreeData);
+
+// Memoization cache for getDescendants function
+var descendantsCache = {};
 
 function getDescendants(nodeId, edges) {
-    var descendants = [];
-    var stack = [nodeId];
-    console.log(edges)
-    while (stack.length > 0) {
-        console.log("Stack: " + stack);
-        var currentId = Number(stack.pop());
-        descendants.push(currentId);
-        edges.forEach(function (edge) {
-            if (edge.from === currentId && !descendants.includes(edge.to)) {
-                stack.push(edge.to);
-            }
-        });
+  // Check if result is already cached
+  if (descendantsCache[nodeId]) {
+    return descendantsCache[nodeId];
+  }
+
+  var descendants = new Set([nodeId]);
+  var stack = [nodeId];
+
+  // Convert edges to adjacency list for faster lookups
+  var adjacencyList = edges.reduce(function (acc, edge) {
+    if (!acc[edge.from]) {
+      acc[edge.from] = [];
     }
-    console.log("Descendants: " + descendants);
-    return descendants;
+    acc[edge.from].push(edge.to);
+    return acc;
+  }, {});
+
+  while (stack.length > 0) {
+    var currentId = stack.pop();
+    var children = adjacencyList[currentId] || [];
+    for (var i = 0; i < children.length; i++) {
+      var childId = children[i];
+      if (!descendants.has(childId)) {
+        descendants.add(childId);
+        stack.push(childId);
+      }
+    }
+  }
+
+  // Convert Set to Array for the result
+  var descendantsArray = Array.from(descendants);
+  // Cache the result before returning
+  descendantsCache[nodeId] = descendantsArray;
+  return descendantsArray;
 }
 
 // Update the visualizeTree function to optionally filter for a subtree and scale edge widths
 function visualizeTree(subtreeRootId) {
+  // Only re-render if the tree data has changed
+  if (!treeDataChanged) {
+    return;
+  }
+
   var nodes = fullTreeData.nodes;
   var edges = fullTreeData.edges;
 
   // If a subtreeRootId is provided, filter nodes and edges to only those in the subtree
   if (subtreeRootId) {
     var descendants = getDescendants(subtreeRootId, edges);
-    console.log("Filtering for subtree with root ID: " + subtreeRootId, edges);
     nodes = nodes.filter((node) => descendants.includes(Number(node.id)));
     edges = edges.filter(
       (edge) =>
         descendants.includes(edge.to) || descendants.includes(edge.from),
     );
-    console.log("Filtered nodes: ", nodes, "Filtered edges: ", edges);
   }
 
   // Calculate min and max weights for scaling after filtering
@@ -169,7 +265,7 @@ function visualizeTree(subtreeRootId) {
         nodes.find((node) => node.id === edge.to).probability,
         max_weight,
         min_weight,
-        10 // Log base
+        10, // Log base
       ),
     };
   });
@@ -186,31 +282,49 @@ function visualizeTree(subtreeRootId) {
     network.focus(subtreeRootId, { scale: 1 });
   }
 
+  // Reset the flag as the tree has been rendered
+  treeDataChanged = false;
 }
 
+// Function to update the info box with total nodes and FPS
+function updateInfoBox() {
+  var totalNodes = data.nodes.length;
+  document.getElementById("totalNodes").textContent = totalNodes;
+}
+
+// Call updateInfoBox when visualizing the tree
+updateInfoBox();
+
+// Update the info box every second
+setInterval(updateInfoBox, 1000);
+
 // Function to reset the color of all nodes
-function resetNodeColors() {
-    fullTreeData.nodes.forEach(function(node) {
-        node.color = undefined; // Reset to default color
-    });
+// Function to update the color of nodes directly in the network
+function updateNodeColors(nodeIds, color) {
+  nodeIds.forEach(function (nodeId) {
+    var nodeToUpdate = network.body.data.nodes.get(nodeId);
+    if (nodeToUpdate) {
+      network.body.data.nodes.update({ id: nodeId, color: color });
+    }
+  });
 }
 
 // Function to highlight nodes by changing their color
 function highlightNodes(nodeIds) {
-    resetNodeColors(); // Reset all nodes before highlighting new ones
-    fullTreeData.nodes.forEach(function(node) {
-        if (nodeIds.includes(node.id)) {
-            node.color = { background: 'yellow', border: 'orange' }; // Highlight color
-        }
-    });
-    visualizeTree(); // Re-render the tree with highlighted nodes
+  // First reset all nodes to their default color
+  updateNodeColors(highlightedNodeIds, undefined);
+  // Then apply the highlight color to the search result nodes
+  updateNodeColors(nodeIds, { background: "yellow", border: "orange" });
+  // Store the current highlighted node ids
+  highlightedNodeIds = nodeIds;
 }
+
 // Event listener for click events to display subtrees
 network.on("click", function (params) {
   if (params.nodes.length === 1) {
     var nodeId = params.nodes[0];
-    console.log("Node clicked: " + nodeId);
     var nodeId = params.nodes[0];
+    treeDataChanged = true;
     visualizeTree(nodeId);
   }
 });
@@ -218,7 +332,7 @@ network.on("click", function (params) {
 // Event listener for right-click events to return to the full tree
 network.on("oncontext", function (params) {
   params.event.preventDefault();
-  console.log("Right-click detected. Returning to full tree view.");
+  treeDataChanged = true;
   visualizeTree(); // Pass the full tree data to restore the full view
 });
 
@@ -236,11 +350,11 @@ document.body.addEventListener("drop", function (e) {
     var reader = new FileReader();
     reader.onload = function () {
       var json = JSON.parse(reader.result);
-    console.log("File dropped, processing JSON data...");
       processJsonData(json); // Process the JSON data
-    console.log("Visualizing tree...");
       visualizeTree(); // Visualize the full tree
-localStorage.setItem('treeData', JSON.stringify(json));
+      // Set the flag to true as the tree data has been updated
+      treeDataChanged = true;
+      localStorage.setItem("treeData", JSON.stringify(json));
     };
     reader.readAsText(file);
   }
@@ -252,7 +366,7 @@ function scale_edge_width(
   max_weight,
   min_weight,
   log_base,
-  max_thickness = 33,
+  max_thickness = 15,
   min_thickness = 1,
 ) {
   // Ensure the cumulative_weight is not less than min_weight to avoid log(0)
@@ -277,80 +391,147 @@ function scale_edge_width(
 }
 // Simple fuzzy search function to match node labels
 // Enhanced fuzzy search function to match node labels and count descendants
+// with caching to speed up repeated searches
 function fuzzySearch(query, nodes, edges) {
-    var results = [];
-    var queryLower = query.toLowerCase();
-    nodes.forEach(function(node) {
-        if (node.label.toLowerCase().includes(queryLower)) {
-            var descendantsCount = getDescendants(node.id, edges).length - 1; // Exclude the node itself
-            results.push({ node: node, count: descendantsCount });
-        }
-    });
-    return results;
-
+  var results = [];
+  var queryLower = query.toLowerCase();
+  // Check if the search results are already cached
+  if (searchCache[queryLower]) {
+    return searchCache[queryLower];
+  }
+  nodes.forEach(function (node) {
+    if (node.label.toLowerCase().includes(queryLower)) {
+      var descendantsCount = getDescendants(node.id, edges).length - 1; // Exclude the node itself
+      results.push({ node: node, count: descendantsCount });
+    }
+  });
+  // Cache the search results
+  searchCache[queryLower] = results;
+  return results;
 }
 // Event listener for the search input to perform live search and highlight all results
-document.getElementById('searchInput').addEventListener('input', function() {
-    var query = document.getElementById('searchInput').value;
-    var searchResultsPopup = document.getElementById('searchResultsPopup');
+// Debounce function to limit the rate at which a function can fire
+function debounce(func, wait, immediate) {
+  var timeout;
+  return function () {
+    var context = this,
+      args = arguments;
+    var later = function () {
+      timeout = null;
+      if (!immediate) func.apply(context, args);
+    };
+    var callNow = immediate && !timeout;
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+    if (callNow) func.apply(context, args);
+  };
+}
+
+// Cache for storing search results to avoid recalculating the same searches
+var searchCache = {};
+
+// Event listener for the search input to perform live search and highlight all results
+document.getElementById("searchInput").addEventListener(
+  "input",
+  debounce(function () {
+    var query = document.getElementById("searchInput").value;
+    var searchResultsPopup = document.getElementById("searchResultsPopup");
     if (query) {
-        var searchResults = fuzzySearch(query, fullTreeData.nodes, fullTreeData.edges);
-        if (searchResults.length > 0) {
-            var resultsHTML = searchResults.map(function(result) {
-                return '<div class="search-result-item" data-node-id="' + result.node.id + '">' +
-                    result.node.label + ' (' + result.count + ' matches)</div>';
-            }).join('');
-            searchResultsPopup.innerHTML = resultsHTML;
-            searchResultsPopup.style.display = 'block';
-            // Highlight all matching nodes
-            var matchingNodeIds = searchResults.map(function(result) { return result.node.id; });
-            highlightNodes(matchingNodeIds);
-            console.log("Search results: ", searchResults);
-        } else {
-            searchResultsPopup.innerHTML = 'No matching nodes found.';
-            resetNodeColors(); // Reset node colors if no matches found
-            visualizeTree(); // Re-render the tree
-            console.log("No matching nodes found.");
-        }
-    } else {
-        searchResultsPopup.style.display = 'none';
-        resetNodeColors(); // Reset node colors when search is cleared
+      var searchResults = fuzzySearch(
+        query,
+        fullTreeData.nodes,
+        fullTreeData.edges,
+      );
+      if (searchResults.length > 0) {
+        var fragment = document.createDocumentFragment();
+        searchResults.forEach(function (result) {
+          var div = document.createElement("div");
+          div.className = "search-result-item";
+          div.setAttribute("data-node-id", result.node.id);
+          div.textContent =
+            result.node.label + " (" + result.count + " matches)";
+          fragment.appendChild(div);
+        });
+        searchResultsPopup.innerHTML = "";
+        searchResultsPopup.appendChild(fragment);
+        searchResultsPopup.style.display = "block";
+        // Highlight all matching nodes
+        var matchingNodeIds = searchResults.map(function (result) {
+          return result.node.id;
+        });
+        highlightNodes(matchingNodeIds);
+      } else {
+        searchResultsPopup.innerHTML = "No matching nodes found.";
+        highlightNodes([]); // Reset node colors if no matches found
         visualizeTree(); // Re-render the tree
+      }
+    } else {
+      searchResultsPopup.style.display = "none";
+      highlightNodes([]); // Reset node colors when search is cleared
+      visualizeTree(); // Re-render the tree
     }
-});
+  }, 500),
+); // Increase debounce rate to 500 milliseconds to reduce search frequency
 
 // Event listener for clicking on search result items
-document.addEventListener('click', function(event) {
-    if (event.target.classList.contains('search-result-item')) {
-        var nodeId = event.target.getAttribute('data-node-id');
-        network.focus(nodeId, { scale: 1 });
-        document.getElementById('searchResultsPopup').style.display = 'none';
-    }
+document.addEventListener("click", function (event) {
+  if (event.target.classList.contains("search-result-item")) {
+    var nodeId = event.target.getAttribute("data-node-id");
+    network.focus(nodeId, { scale: 1 });
+    document.getElementById("searchResultsPopup").style.display = "none";
+  }
 });
 // Event listener for the search input to handle Enter keypress and cycle through matches
-document.getElementById('searchInput').addEventListener('keypress', function(event) {
-    if (event.key === 'Enter') {
-        var searchResultsPopup = document.getElementById('searchResultsPopup');
-        var searchResultItems = searchResultsPopup.getElementsByClassName('search-result-item');
-        if (searchResultItems.length > 0) {
-            // If we've reached the end of the list, start from the beginning
-            if (currentSearchResultIndex >= searchResultItems.length) {
-                currentSearchResultIndex = 0;
-            }
-            var resultItem = searchResultItems[currentSearchResultIndex];
-            var nodeId = resultItem.getAttribute('data-node-id');
-            network.focus(nodeId, { scale: 1 });
-            currentSearchResultIndex++; // Move to the next result for the next Enter press
+document
+  .getElementById("searchInput")
+  .addEventListener("keypress", function (event) {
+    if (event.key === "Enter") {
+      var searchResultsPopup = document.getElementById("searchResultsPopup");
+      var searchResultItems =
+        searchResultsPopup.getElementsByClassName("search-result-item");
+      if (searchResultItems.length > 0) {
+        // If we've reached the end of the list, start from the beginning
+        if (currentSearchResultIndex >= searchResultItems.length) {
+          currentSearchResultIndex = 0;
         }
+        var resultItem = searchResultItems[currentSearchResultIndex];
+        var nodeId = resultItem.getAttribute("data-node-id");
+        network.focus(nodeId, { scale: 1 });
+        currentSearchResultIndex++; // Move to the next result for the next Enter press
+      }
+    }
+  });
+
+// Event listener for the 'Clear' button
+document.getElementById("clearButton").addEventListener("click", function () {
+  localStorage.removeItem("treeData"); // Clear local storage
+  location.reload(); // Reload the page to reset the visualization
+});
+
+// Event listener for the dataset dropdown menu
+document.getElementById("datasetDropdown").addEventListener("change", function (event) {
+    var dataset = event.target.value;
+    if (dataset) {
+        fetchDatasetFromHuggingFace(dataset);
     }
 });
 
-// Event listener for the 'Clear' button
-document.getElementById('clearButton').addEventListener('click', function() {
-    localStorage.removeItem('treeData'); // Clear local storage
-    location.reload(); // Reload the page to reset the visualization
-});
+// Function to fetch a dataset from Hugging Face and process it
+function fetchDatasetFromHuggingFace(dataset) {
+    var url = `https://huggingface.co/datasets/${dataset}/raw/main/train.json`;
+    fetch(url)
+        .then(response => response.json())
+        .then(json => {
+            processJsonData(json); // Process the JSON data
+            visualizeTree(); // Visualize the full tree
+            // Set the flag to true as the tree data has been updated
+            treeDataChanged = true;
+            localStorage.setItem("treeData", JSON.stringify(json));
+        })
+        .catch(error => {
+            console.error("Error fetching dataset from Hugging Face:", error);
+        });
+}
 </script>
 </body>
 </html>
-
