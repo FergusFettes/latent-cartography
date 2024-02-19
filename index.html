@@ -95,7 +95,7 @@ var options = {
   },
   physics: {
     enabled: false, // Disable physics for hierarchical layout
-  },
+  }
 };
 var network = new vis.Network(container, data, options);
 // Store the full tree data globally
@@ -118,11 +118,17 @@ function processJsonData(json) {
         id: numericKey,
         label: node.word,
         shape: "box",
+        color: {
+          background: "white",
+          border: "#135061",
+          // border: "white"
+        },
+        borderWidth: 1,
         probability: node.prob,
       });
 
       if (node.parent !== null) {
-        edges.push({ from: Number(node.parent), to: numericKey });
+        edges.push({ from: Number(node.parent), to: numericKey});
       }
     }
   }
@@ -171,7 +177,6 @@ function getDescendants(nodeId, edges) {
   return descendantsArray;
 }
 
-// Update the visualizeTree function to optionally filter for a subtree and scale edge widths
 // Update the visualizeTree function to optionally filter for a subtree and scale edge widths
 function visualizeTree(subtreeRootId) {
   // Only re-render if the tree data has changed
@@ -315,7 +320,7 @@ function scale_edge_width(
   max_weight,
   min_weight,
   log_base,
-  max_thickness = 33,
+  max_thickness = 15,
   min_thickness = 1,
 ) {
   // Ensure the cumulative_weight is not less than min_weight to avoid log(0)
