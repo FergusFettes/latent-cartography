@@ -93,6 +93,8 @@ document.addEventListener('DOMContentLoaded', function() {
             var json = JSON.parse(storedJson);
             processJsonData(json);
             visualizeTree();
+            // Make sure the display is set to block after processing the JSON data
+            document.getElementById('mynetwork').style.display = 'block';
         }
     }
 });
@@ -234,6 +236,7 @@ function processJsonData(json) {
     }
     populateTopLevelNodesList(); // Populate the list of top-level nodes
 }
+
 // Store top-level nodes globally
 var topLevelNodes = [];
 
@@ -263,7 +266,13 @@ function populateTopLevelNodesList(pathNodeIds = [rootId]) {
         listItem.className = 'top-level-node-item';
         listItem.textContent = node.label;
         listItem.onclick = function() {
-            network.focus(node.id, { scale: 1 });
+            // If the network is visible
+            if (document.getElementById('mynetwork').style.display === 'block') {
+                network.focus(node.id, { scale: 1 });
+            } else {
+                // If the subtree is visible
+                subtreeNetwork.focus(node.id, { scale: 1 });
+            }
         };
         listContainer.appendChild(listItem);
     });
@@ -526,6 +535,7 @@ function scale_edge_width(
 
   return scaled_weight;
 }
+
 // Simple fuzzy search function to match node labels
 // Enhanced fuzzy search function to match node labels and count descendants
 // with caching to speed up repeated searches
@@ -546,6 +556,7 @@ function fuzzySearch(query, nodes, edges) {
   searchCache[queryLower] = results;
   return results;
 }
+
 // Event listener for the search input to perform live search and highlight all results
 // Debounce function to limit the rate at which a function can fire
 function debounce(func, wait, immediate) {
@@ -618,6 +629,7 @@ document.addEventListener("click", function (event) {
     document.getElementById("searchResultsPopup").style.display = "none";
   }
 });
+
 // Event listener for the search input to handle Enter keypress and cycle through matches
 document
   .getElementById("searchInput")
