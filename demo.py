@@ -30,7 +30,7 @@ def validate_word(word):
     word = word.strip()
     if not word:
         return False
-    if not re.match(r"^[a-zA-Z']+$", word):
+    if not re.match(r"^[a-zA-Z'(),.?!]+$", word):
         return False
     return True
 
