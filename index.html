@@ -108,62 +108,67 @@ var highlightedNodeIds = [];
 var currentSearchResultIndex = 0;
 // Function to process JSON and store it in fullTreeData
 function processJsonData(json) {
-    var nodes = [];
-    var edges = [];
-    for (var key in json) {
-        if (json.hasOwnProperty(key)) {
-            var node = json[key];
-            var numericKey = Number(key);
-            nodes.push({ id: numericKey, label: node.word, shape: "box", probability: node.prob });
+  var nodes = [];
+  var edges = [];
+  for (var key in json) {
+    if (json.hasOwnProperty(key)) {
+      var node = json[key];
+      var numericKey = Number(key);
+      nodes.push({
+        id: numericKey,
+        label: node.word,
+        shape: "box",
+        probability: node.prob,
+      });
 
-            if (node.parent !== null) {
-                edges.push({ from: Number(node.parent), to: numericKey });
-            }
-        }
+      if (node.parent !== null) {
+        edges.push({ from: Number(node.parent), to: numericKey });
+      }
     }
-    fullTreeData = { nodes: nodes, edges: edges };
-// Set the flag to true as the tree data has been updated
-treeDataChanged = true;
+  }
+  fullTreeData = { nodes: nodes, edges: edges };
+  // Set the flag to true as the tree data has been updated
+  treeDataChanged = true;
 }
 
 // Memoization cache for getDescendants function
 var descendantsCache = {};
 
 function getDescendants(nodeId, edges) {
-    // Check if result is already cached
-    if (descendantsCache[nodeId]) {
-        return descendantsCache[nodeId];
+  // Check if result is already cached
+  if (descendantsCache[nodeId]) {
+    return descendantsCache[nodeId];
+  }
+
+  var descendants = new Set([nodeId]);
+  var stack = [nodeId];
+
+  // Convert edges to adjacency list for faster lookups
+  var adjacencyList = edges.reduce(function (acc, edge) {
+    if (!acc[edge.from]) {
+      acc[edge.from] = [];
     }
+    acc[edge.from].push(edge.to);
+    return acc;
+  }, {});
 
-    var descendants = new Set([nodeId]);
-    var stack = [nodeId];
-
-    // Convert edges to adjacency list for faster lookups
-    var adjacencyList = edges.reduce(function(acc, edge) {
-        if (!acc[edge.from]) {
-            acc[edge.from] = [];
-        }
-        acc[edge.from].push(edge.to);
-        return acc;
-    }, {});
-
-    while (stack.length > 0) {
-        var currentId = stack.pop();
-        var children = adjacencyList[currentId] || [];
-        for (var i = 0; i < children.length; i++) {
-            var childId = children[i];
-            if (!descendants.has(childId)) {
-                descendants.add(childId);
-                stack.push(childId);
-            }
-        }
+  while (stack.length > 0) {
+    var currentId = stack.pop();
+    var children = adjacencyList[currentId] || [];
+    for (var i = 0; i < children.length; i++) {
+      var childId = children[i];
+      if (!descendants.has(childId)) {
+        descendants.add(childId);
+        stack.push(childId);
+      }
     }
+  }
 
-    // Convert Set to Array for the result
-    var descendantsArray = Array.from(descendants);
-    // Cache the result before returning
-    descendantsCache[nodeId] = descendantsArray;
-    return descendantsArray;
+  // Convert Set to Array for the result
+  var descendantsArray = Array.from(descendants);
+  // Cache the result before returning
+  descendantsCache[nodeId] = descendantsArray;
+  return descendantsArray;
 }
 
 // Update the visualizeTree function to optionally filter for a subtree and scale edge widths
@@ -183,7 +188,7 @@ function visualizeTree(subtreeRootId) {
     nodes = nodes.filter((node) => descendants.includes(Number(node.id)));
     edges = edges.filter(
       (edge) =>
-        descendants.includes(edge.to) || descendants.includes(edge.from)
+        descendants.includes(edge.to) || descendants.includes(edge.from),
     );
   }
 
@@ -209,7 +214,7 @@ function visualizeTree(subtreeRootId) {
         nodes.find((node) => node.id === edge.to).probability,
         max_weight,
         min_weight,
-        10 // Log base
+        10, // Log base
       ),
     };
   });
@@ -232,8 +237,8 @@ function visualizeTree(subtreeRootId) {
 
 // Function to update the info box with total nodes and FPS
 function updateInfoBox() {
-    var totalNodes = data.nodes.length;
-    document.getElementById('totalNodes').textContent = totalNodes;
+  var totalNodes = data.nodes.length;
+  document.getElementById("totalNodes").textContent = totalNodes;
 }
 
 // Call updateInfoBox when visualizing the tree
@@ -245,22 +250,22 @@ setInterval(updateInfoBox, 1000);
 // Function to reset the color of all nodes
 // Function to update the color of nodes directly in the network
 function updateNodeColors(nodeIds, color) {
-    nodeIds.forEach(function(nodeId) {
-        var nodeToUpdate = network.body.data.nodes.get(nodeId);
-        if (nodeToUpdate) {
-            network.body.data.nodes.update({ id: nodeId, color: color });
-        }
-    });
+  nodeIds.forEach(function (nodeId) {
+    var nodeToUpdate = network.body.data.nodes.get(nodeId);
+    if (nodeToUpdate) {
+      network.body.data.nodes.update({ id: nodeId, color: color });
+    }
+  });
 }
 
 // Function to highlight nodes by changing their color
 function highlightNodes(nodeIds) {
-    // First reset all nodes to their default color
-    updateNodeColors(highlightedNodeIds, undefined);
-    // Then apply the highlight color to the search result nodes
-    updateNodeColors(nodeIds, { background: 'yellow', border: 'orange' });
-    // Store the current highlighted node ids
-    highlightedNodeIds = nodeIds;
+  // First reset all nodes to their default color
+  updateNodeColors(highlightedNodeIds, undefined);
+  // Then apply the highlight color to the search result nodes
+  updateNodeColors(nodeIds, { background: "yellow", border: "orange" });
+  // Store the current highlighted node ids
+  highlightedNodeIds = nodeIds;
 }
 
 // Event listener for click events to display subtrees
@@ -296,9 +301,9 @@ document.body.addEventListener("drop", function (e) {
       var json = JSON.parse(reader.result);
       processJsonData(json); // Process the JSON data
       visualizeTree(); // Visualize the full tree
-// Set the flag to true as the tree data has been updated
-treeDataChanged = true;
-localStorage.setItem('treeData', JSON.stringify(json));
+      // Set the flag to true as the tree data has been updated
+      treeDataChanged = true;
+      localStorage.setItem("treeData", JSON.stringify(json));
     };
     reader.readAsText(file);
   }
@@ -337,105 +342,119 @@ function scale_edge_width(
 // Enhanced fuzzy search function to match node labels and count descendants
 // with caching to speed up repeated searches
 function fuzzySearch(query, nodes, edges) {
-    var results = [];
-    var queryLower = query.toLowerCase();
-    // Check if the search results are already cached
-    if (searchCache[queryLower]) {
-        return searchCache[queryLower];
+  var results = [];
+  var queryLower = query.toLowerCase();
+  // Check if the search results are already cached
+  if (searchCache[queryLower]) {
+    return searchCache[queryLower];
+  }
+  nodes.forEach(function (node) {
+    if (node.label.toLowerCase().includes(queryLower)) {
+      var descendantsCount = getDescendants(node.id, edges).length - 1; // Exclude the node itself
+      results.push({ node: node, count: descendantsCount });
     }
-    nodes.forEach(function(node) {
-        if (node.label.toLowerCase().includes(queryLower)) {
-            var descendantsCount = getDescendants(node.id, edges).length - 1; // Exclude the node itself
-            results.push({ node: node, count: descendantsCount });
-        }
-    });
-    // Cache the search results
-    searchCache[queryLower] = results;
-    return results;
+  });
+  // Cache the search results
+  searchCache[queryLower] = results;
+  return results;
 }
 // Event listener for the search input to perform live search and highlight all results
 // Debounce function to limit the rate at which a function can fire
 function debounce(func, wait, immediate) {
-    var timeout;
-    return function() {
-        var context = this, args = arguments;
-        var later = function() {
-            timeout = null;
-            if (!immediate) func.apply(context, args);
-        };
-        var callNow = immediate && !timeout;
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-        if (callNow) func.apply(context, args);
+  var timeout;
+  return function () {
+    var context = this,
+      args = arguments;
+    var later = function () {
+      timeout = null;
+      if (!immediate) func.apply(context, args);
     };
-};
+    var callNow = immediate && !timeout;
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+    if (callNow) func.apply(context, args);
+  };
+}
 
 // Cache for storing search results to avoid recalculating the same searches
 var searchCache = {};
 
 // Event listener for the search input to perform live search and highlight all results
-document.getElementById('searchInput').addEventListener('input', debounce(function() {
-    var query = document.getElementById('searchInput').value;
-    var searchResultsPopup = document.getElementById('searchResultsPopup');
+document.getElementById("searchInput").addEventListener(
+  "input",
+  debounce(function () {
+    var query = document.getElementById("searchInput").value;
+    var searchResultsPopup = document.getElementById("searchResultsPopup");
     if (query) {
-        var searchResults = fuzzySearch(query, fullTreeData.nodes, fullTreeData.edges);
-        if (searchResults.length > 0) {
-            var fragment = document.createDocumentFragment();
-            searchResults.forEach(function(result) {
-                var div = document.createElement('div');
-                div.className = 'search-result-item';
-                div.setAttribute('data-node-id', result.node.id);
-                div.textContent = result.node.label + ' (' + result.count + ' matches)';
-                fragment.appendChild(div);
-            });
-            searchResultsPopup.innerHTML = '';
-            searchResultsPopup.appendChild(fragment);
-            searchResultsPopup.style.display = 'block';
-            // Highlight all matching nodes
-            var matchingNodeIds = searchResults.map(function(result) { return result.node.id; });
-            highlightNodes(matchingNodeIds);
-        } else {
-            searchResultsPopup.innerHTML = 'No matching nodes found.';
-            highlightNodes([]); // Reset node colors if no matches found
-            visualizeTree(); // Re-render the tree
-        }
-    } else {
-        searchResultsPopup.style.display = 'none';
-        highlightNodes([]); // Reset node colors when search is cleared
+      var searchResults = fuzzySearch(
+        query,
+        fullTreeData.nodes,
+        fullTreeData.edges,
+      );
+      if (searchResults.length > 0) {
+        var fragment = document.createDocumentFragment();
+        searchResults.forEach(function (result) {
+          var div = document.createElement("div");
+          div.className = "search-result-item";
+          div.setAttribute("data-node-id", result.node.id);
+          div.textContent =
+            result.node.label + " (" + result.count + " matches)";
+          fragment.appendChild(div);
+        });
+        searchResultsPopup.innerHTML = "";
+        searchResultsPopup.appendChild(fragment);
+        searchResultsPopup.style.display = "block";
+        // Highlight all matching nodes
+        var matchingNodeIds = searchResults.map(function (result) {
+          return result.node.id;
+        });
+        highlightNodes(matchingNodeIds);
+      } else {
+        searchResultsPopup.innerHTML = "No matching nodes found.";
+        highlightNodes([]); // Reset node colors if no matches found
         visualizeTree(); // Re-render the tree
+      }
+    } else {
+      searchResultsPopup.style.display = "none";
+      highlightNodes([]); // Reset node colors when search is cleared
+      visualizeTree(); // Re-render the tree
     }
-}, 500)); // Increase debounce rate to 500 milliseconds to reduce search frequency
+  }, 500),
+); // Increase debounce rate to 500 milliseconds to reduce search frequency
 
 // Event listener for clicking on search result items
-document.addEventListener('click', function(event) {
-    if (event.target.classList.contains('search-result-item')) {
-        var nodeId = event.target.getAttribute('data-node-id');
-        network.focus(nodeId, { scale: 1 });
-        document.getElementById('searchResultsPopup').style.display = 'none';
-    }
+document.addEventListener("click", function (event) {
+  if (event.target.classList.contains("search-result-item")) {
+    var nodeId = event.target.getAttribute("data-node-id");
+    network.focus(nodeId, { scale: 1 });
+    document.getElementById("searchResultsPopup").style.display = "none";
+  }
 });
 // Event listener for the search input to handle Enter keypress and cycle through matches
-document.getElementById('searchInput').addEventListener('keypress', function(event) {
-    if (event.key === 'Enter') {
-        var searchResultsPopup = document.getElementById('searchResultsPopup');
-        var searchResultItems = searchResultsPopup.getElementsByClassName('search-result-item');
-        if (searchResultItems.length > 0) {
-            // If we've reached the end of the list, start from the beginning
-            if (currentSearchResultIndex >= searchResultItems.length) {
-                currentSearchResultIndex = 0;
-            }
-            var resultItem = searchResultItems[currentSearchResultIndex];
-            var nodeId = resultItem.getAttribute('data-node-id');
-            network.focus(nodeId, { scale: 1 });
-            currentSearchResultIndex++; // Move to the next result for the next Enter press
+document
+  .getElementById("searchInput")
+  .addEventListener("keypress", function (event) {
+    if (event.key === "Enter") {
+      var searchResultsPopup = document.getElementById("searchResultsPopup");
+      var searchResultItems =
+        searchResultsPopup.getElementsByClassName("search-result-item");
+      if (searchResultItems.length > 0) {
+        // If we've reached the end of the list, start from the beginning
+        if (currentSearchResultIndex >= searchResultItems.length) {
+          currentSearchResultIndex = 0;
         }
+        var resultItem = searchResultItems[currentSearchResultIndex];
+        var nodeId = resultItem.getAttribute("data-node-id");
+        network.focus(nodeId, { scale: 1 });
+        currentSearchResultIndex++; // Move to the next result for the next Enter press
+      }
     }
-});
+  });
 
 // Event listener for the 'Clear' button
-document.getElementById('clearButton').addEventListener('click', function() {
-    localStorage.removeItem('treeData'); // Clear local storage
-    location.reload(); // Reload the page to reset the visualization
+document.getElementById("clearButton").addEventListener("click", function () {
+  localStorage.removeItem("treeData"); // Clear local storage
+  location.reload(); // Reload the page to reset the visualization
 });
 </script>
 </body>
