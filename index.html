@@ -71,6 +71,7 @@ document.addEventListener('DOMContentLoaded', function() {
 <select id="datasetDropdown">
     <option value="">Select a dataset</option>
     <option value="fergusfettes/gpt2_noken_1e-06_AtypicaldefinitionofXwouldbe">GPT-2 Centroid</option>
+    <option value="fergusfettes/gpt2_noken_1e-05_AtypicaldefinitionofXwouldbeawoman">GPT-2 Centroid Woman</option>
 </select>
 <input type="text" id="searchInput" placeholder="Search nodes...">
 <button id="searchButton">Search</button>
@@ -476,7 +477,7 @@ document.getElementById("datasetDropdown").addEventListener("change", function (
 
 // Function to fetch a dataset from Hugging Face and process it
 function fetchDatasetFromHuggingFace(dataset) {
-    var url = `https://huggingface.co/datasets/${dataset}/raw/main/test.json`;
+    var url = `https://huggingface.co/datasets/${dataset}/raw/main/train.json`;
     fetch(url)
         .then(response => response.json())
         .then(json => {
