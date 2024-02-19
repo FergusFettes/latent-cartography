@@ -1,3 +1,4 @@
+import time
 import json
 from typing import Optional
 from nnsight import LanguageModel
@@ -5,6 +6,7 @@ import re
 import torch
 from transformers import AutoModelForCausalLM
 
+from tqdm import tqdm
 import typer
 
 app = typer.Typer()
@@ -51,14 +53,18 @@ class LatentCartographer:
         self.cutoff = cutoff
         self.noken = noken
         self.model_specifics = get_model_specifics(model_name)
+        self.nodes = {}
+        self.progress_bar = tqdm(desc="Processing", unit="iter")
 
-    def loop(self, prompt, nodes, node_id):
+    def loop(self, prompt_tokens, node_id):
+        self.progress_bar.update(1)
+        prompt = self.model.tokenizer.decode(prompt_tokens)
         with self.model.forward() as runner:
             with runner.invoke(prompt) as _:
                 getattr(getattr(self.model, self.model_specifics[0]), self.model_specifics[2]).output.t[self.token_position] = self.noken
                 output = self.model.lm_head.output.t[-1].save()
 
-        cumulative_prob = nodes[node_id]["prob"]
+        cumulative_prob = self.nodes[node_id]["prob"]
 
         # Apply softmax, filter out low probability tokens, then get the top k
         probs = torch.softmax(output.value, dim=-1)
@@ -75,12 +81,9 @@ class LatentCartographer:
 
             print(f"prompt: {prompt} -> {word}:\t{prob:.4f}\t({cumulative_prob * prob:.2e})")
 
-            id = len(nodes) + 1
-            nodes[id] = {"token": token, "word": word, "prob": prob * cumulative_prob, "parent": node_id}
-            # Ensure word starts with a space, unless the last letter is an apostrophe
-            if not prompt.endswith("'") and not prompt.endswith(" ") and not word.startswith(" "):
-                word = " " + word
-            self.loop(prompt + word, nodes, id)
+            id = len(self.nodes) + 1
+            self.nodes[id] = {"token": token, "word": word, "prob": prob * cumulative_prob, "parent": node_id}
+            self.loop(prompt_tokens + [token], id)
 
 
 @app.command()
@@ -115,13 +118,17 @@ def main(
         x = model.tokenizer.encode("X")
         token_position = tokens.index(x[0])
 
-    data = {0: {"token": None, "word": prompt, "prob": 1, "parent": None}}
+    tokens = model.tokenizer.encode(prompt, add_special_tokens=False)
     latent_cartographer = LatentCartographer(model, model_name, token_position, cutoff, embeddings)
-    latent_cartographer.loop(prompt, data, 0)
+    latent_cartographer.nodes = {0: {"token": None, "word": prompt, "prob": 1, "parent": None}}
+    start = time.time()
+    latent_cartographer.loop(tokens, 0)
+
+    print(f"Elapsed time: {time.time() - start:.2f}s. Nodes: {len(latent_cartographer.nodes)}")
 
     model_name = model_name.replace("/", "-")
     with open(f"{model_name}_{word}_{cutoff}.json", "w") as f:
-        json.dump(data, f, indent=2)
+        json.dump(latent_cartographer.nodes, f, indent=2)
 
 
 if __name__ == "__main__":
