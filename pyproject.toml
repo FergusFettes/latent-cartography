@@ -16,6 +16,7 @@ nnsight = "^0.1.18"
 typer = "^0.9.0"
 datasets = "^2.17.0"
 python-dotenv = "^1.0.1"
+scipy = "^1.12.0"
 
 
 [tool.poetry.group.dev.dependencies]
