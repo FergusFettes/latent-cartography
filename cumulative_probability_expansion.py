@@ -20,6 +20,8 @@ model_names = {
     # "mamba": "MrGonao/delphi-mamba-100k",
     "mistral": "mistralai/Mistral-7B-v0.1",
     "gptj": "EleutherAI/gpt-j-6B",
+    "gemma": "google/gemma-7b",
+    "gemma2": "google/gemma-2b",
 }
 
 
