@@ -4,12 +4,13 @@ import re
 import torch
 from transformers import AutoModelForCausalLM
 
-from modal import Stub, gpu, method
+from modal import Stub, gpu, method, Secret
 from modal_image_gptj import image
 from tqdm import tqdm
 
 
-stub = Stub(image=image, name="nnsight")
+stub = Stub(image=image, name="nnsight", secrets=[Secret.from_name("my-huggingface-secret")])
+
 
 # Define the model names for LLaMA-2, Mistral, and GPT-2
 model_names = {
@@ -26,7 +27,7 @@ model_names = {
 
 @stub.cls(
     gpu=gpu.A100(memory=40, count=1),
-    timeout=60 * 10,
+    timeout=100 * 10,
     container_idle_timeout=60 * 5,
 )
 class LatentCartographer:
@@ -169,6 +170,7 @@ def main(
 
     print(f"Elapsed time: {time.time() - start:.2f}s. Nodes: {len(nodes)}")
 
+    prompt.replace(" ", "")
     model_name = model_name.replace("/", "-")
     filename = f"{model_name}_{word}_{cutoff}_{prompt}.json"
     print(f"Saving nodes to {filename}")
