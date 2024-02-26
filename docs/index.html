@@ -400,7 +400,7 @@ function visualizeTree(subtreeRootId, targetNetwork = network, isSubtree = false
                 min_weight,
                 10
             ),
-            title: `Probability: ${node.probability}`
+            title: `Cumulative Probability: ${node.probability.toExponential(2)}`
         };
     });
 
@@ -705,6 +705,7 @@ document.getElementById("clearButton").addEventListener("click", function () {
 document.getElementById("datasetDropdown").addEventListener("change", function (event) {
     var dataset = event.target.value;
     if (dataset) {
+        window.location.hash = dataset;
         fetchDatasetFromHuggingFace(dataset);
     }
 });
