@@ -98,6 +98,24 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 });
+// Function to load dataset based on URL hash
+function loadDatasetFromHash() {
+    var hash = window.location.hash.substring(1); // Remove the '#' symbol
+    console.log('Hash:', hash)
+    if (hash) {
+        var dropdown = document.getElementById('datasetDropdown');
+        for (var i = 0; i < dropdown.options.length; i++) {
+            if (dropdown.options[i].value.includes(hash)) {
+                dropdown.selectedIndex = i;
+                fetchDatasetFromHuggingFace(dropdown.options[i].value);
+                break;
+            }
+        }
+    }
+}
+
+// Call loadDatasetFromHash on page load
+document.addEventListener('DOMContentLoaded', loadDatasetFromHash);
 </script>
 <div style="position: absolute; top: 10px; right: 10px; z-index: 5;">
     <button id="clearButton">Clear</button>
@@ -106,6 +124,9 @@ document.addEventListener('DOMContentLoaded', function() {
     <option value="fergusfettes/gpt2_noken_1e-06_AtypicaldefinitionofXwouldbe">GPT-2 Centroid</option>
     <option value="fergusfettes/gpt2_noken_1e-05_AtypicaldefinitionofXwouldbeawoman">GPT-2 Centroid Woman</option>
     <option value="fergusfettes/gpt2_noken_1e-05_AtypicaldefinitionofXwouldbeaman">GPT-2 Centroid Man</option>
+    <option value="fergusfettes/gpt2_cat_1e-5_cat">GPT-2 Cat</option>
+    <option value="fergusfettes/gpt2_dog_1e-5_dog">GPT-2 Dog</option>
+    <option value="fergusfettes/gpt2_catdog_1e-5_catdog">GPT-2 Cat/Dog</option>
     <option value="fergusfettes/EleutherAI-gpt-j-6B_noken_1e-06_AtypicaldefinitionofXwouldbe">GPT-J Centroid</option>
     <option value="fergusfettes/EleutherAI-gpt-j-6B_noken_1e-05_AtypicaldefinitionofXwouldbeawoman">GPT-J Centroid Woman</option>
     <option value="fergusfettes/EleutherAI-gpt-j-6B_noken_1e-05_AtypicaldefinitionofXwouldbeaman">GPT-J Centroid Man</option>
@@ -159,33 +180,52 @@ var optionsHierarchical = {
 var network = new vis.Network(container, data, optionsHierarchical);
 
 
+// Global variable to track the state of the physics simulation
+var physicsEnabled = false;
 document.getElementById('switchLayoutButton').addEventListener('click', function() {
-  // Define your physics-based options
-  var optionsPhysics = {
-    physics: {
-      barnesHut: {
-        gravitationalConstant: -20000,
-        centralGravity: 0.3,
-        springLength: 20,
-        springConstant: 0.25,
-        damping: 0.05,
-        avoidOverlap: 0.1
-      },
-      solver: 'barnesHut',
-      stabilization: {
-        enabled: true,
-        iterations: 1000,
-        updateInterval: 10,
-        onlyDynamicEdges: false,
-        fit: true
-      }
-    },
-    layout: {
-      hierarchical: false // Disable the hierarchical layout
-    }
-  };
+  // Toggle the physicsEnabled state
+  physicsEnabled = !physicsEnabled;
 
-  network.setOptions(optionsPhysics);
+  var options;
+  if (physicsEnabled) {
+    // Define physics-based options
+    options = {
+      physics: {
+        forceAtlas2Based: {
+          gravitationalConstant: -50,
+          centralGravity: 0.01,
+          springLength: 100,
+          springConstant: 0.08,
+          damping: 0.4,
+          avoidOverlap: 0
+        },
+        maxVelocity: 50,
+        solver: 'forceAtlas2Based',
+        timestep: 0.35,
+        stabilization: {
+          enabled: true,
+          iterations: 1000,
+          updateInterval: 25,
+          onlyDynamicEdges: false,
+          fit: true
+        }
+      },
+      layout: {
+        improvedLayout: true,
+        hierarchical: false // Disable the hierarchical layout
+      }
+    };
+    console.log('Physics-based layout enabled');
+  } else {
+    // Define options to freeze the network
+    options = {
+      physics: {
+        enabled: false // Disable physics to freeze the network
+      }
+    };
+    console.log('Physics-based layout disabled');
+  }
+  network.setOptions(options);
 });
 
 
@@ -208,14 +248,14 @@ function processJsonData(json) {
             var numericKey = Number(key);
             nodes.push({
                 id: numericKey,
-                label: node.word,
+                label: node.text || node.word,
                 shape: "box",
                 color: {
                     background: "white",
                     border: "#135061",
                 },
                 borderWidth: 1,
-                probability: node.prob,
+                probability: node.prob || node.probability,
             });
 
             if (node.parent !== null) {
@@ -350,15 +390,17 @@ function visualizeTree(subtreeRootId, targetNetwork = network, isSubtree = false
     });
 
     edges = edges.map(function (edge) {
+        const node = nodes.find((node) => node.id === edge.to);
         return {
             from: edge.from,
             to: edge.to,
             value: scale_edge_width(
-                nodes.find((node) => node.id === edge.to).probability,
+                node.probability,
                 max_weight,
                 min_weight,
                 10
             ),
+            title: `Probability: ${node.probability}`
         };
     });
 

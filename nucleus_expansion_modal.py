@@ -27,7 +27,7 @@ model_names = {
 
 @stub.cls(
     gpu=gpu.A100(memory=40, count=1),
-    timeout=100 * 10,
+    timeout=60 * 20,
     container_idle_timeout=60 * 5,
 )
 class LatentCartographer:
